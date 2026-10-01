@@ -1,0 +1,28 @@
+{
+  "name": "eleicao-2026-radar",
+  "version": "1.0.0",
+  "description": "Sistema de RAG, Grafo de Conhecimento e Alinhamento Político para Eleições 2026",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "extract": "node src/pipeline/extract.js",
+    "build-graph": "node src/pipeline/build_graph.js",
+    "dev": "node src/server/index.js"
+  },
+  "keywords": [
+    "eleicoes-2026",
+    "tse",
+    "graphify",
+    "rag",
+    "political-compass"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "adm-zip": "^0.6.1",
+    "cors": "^2.8.6",
+    "csv-parser": "^3.2.1",
+    "express": "^5.2.1",
+    "pdf-parse": "^2.4.5"
+  }
+}

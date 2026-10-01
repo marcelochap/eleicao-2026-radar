@@ -1,0 +1,109 @@
+18/08/2026
+Número: 0600018-45.2026.6.07.0005
+Classe: FILIAÇÃO PARTIDÁRIA
+Órgão julgador: 005ª ZONA ELEITORAL DE BRASÍLIA DF
+Última distribuição : 15/07/2026
+Valor da causa: R$ 0,00
+Assuntos: Filiação Partidária - Lista Especial
+Segredo de Justiça? NÃO
+Justiça gratuita? NÃO
+Pedido de liminar ou antecipação de tutela? NÃO
+Tribunal Regional Eleitoral do Distrito Federal
+PJe - Processo Judicial Eletrônico
+Partes Advogados
+ALDERICO DA SILVA PINHEIRO FILHO (REQUERENTE)
+TACIANO EL HAOULI (ADVOGADO)
+CHAUKI EL HAOULI (ADVOGADO)
+LUIZ EDUARDO DE SOUSA NETO (ADVOGADO)
+PARTIDO RENOVADOR TRABALHISTA BRASILEIRO -
+PRTB - NACIONAL (REQUERIDO)
+RODNEY ROCHA MIRANDA (ADVOGADO)
+Outros participantes
+PROMOTOR ELEITORAL DO DF E TERRITÓRIOS (FISCAL
+DA LEI)
+Documentos
+Id. Data da
+Assinatura Documento Tipo
+122370340 04/08/2026
+14:31 Decisão Decisão
+
+-- 1 of 3 --
+
+Num. 122370340 - Pág. 1
+Assinado eletronicamente por: CLARISSA BRAGA MENDES - 04/08/2026 14:31:08
+https://pje1g-df.tse.jus.br/pje/Processo/ConsultaDocumento/listView.seam?x=26080414310867100000115304925
+Número do documento: 26080414310867100000115304925
+Este documento foi gerado pelo usuário 240.***.***-25 em 18/08/2026 14:41:06
+TRIBUNAL REGIONAL ELEITORAL DO DF
+CARTÓRIO DA 5ª ZONA ELEITORAL
+Quadra 07, AR 01, Sobradinho - Brasília - DF
+(61) 3048-4581 / 4582 - ce5df@tre-df.gov.br
+FILIAÇÃO PARTIDÁRIA (12554) Nº 0600018-45.2026.6.07.0005 / 005ª ZONA ELEITORAL DE
+BRASÍLIA DF
+REQUERENTE: ALDERICO DA SILVA PINHEIRO FILHO
+REPRESENTANTE DO REQUERENTE: TACIANO EL HAOULI - DF68521, CHAUKI EL
+HAOULI - DF13865
+REQUERIDO: PARTIDO RENOVADOR TRABALHISTA BRASILEIRO - PRTB - NACIONAL
+REPRESENTANTE DO REQUERIDO: RODNEY ROCHA MIRANDA - ES30277
+DECISÃO
+Trata-se de requerimento fomrulado ALDERICO DA SILVA PINHEIRO FILHO
+com fundamentado no art. 19, § 2º, da Lei nº 9.096/95.
+O requerente alega ter se filiado ao PRTB em 04/04/2026, mas que, por circunstâncias alheias à
+sua vontade e à da agremiação, o registro não foi inserido tempestivamente no sistema
+FILIA/TSE. Sustenta que a omissão decorreu do bloqueio das credenciais de acesso do partido
+aos sistemas da Justiça Eleitoral, situação que só foi regularizada em junho de 2026 (id.
+122367283).
+O pedido foi instruído com cópia da Ficha de Filiação Partidária assinada digitalmente em
+04/04/2026 (id. 122367287), documentos de identificação (ids. 122367285 e 122367286) e
+cópia da decisão proferida pelo Tribunal de Justiça do Distrito Federal e Territórios (TJDFT)
+nos autos do AI nº 0751259-50.2025.8.07.0000, datada de 11/03/2026, que restabeleceu a
+presidência de Leonardo Alves de Araújo (id. 122367289).
+O PRTB apresentou manifestação de concordância integral com o pedido, confirmando a
+filiação do requerente em 04/04/2026 e reiterando que a ausência de lançamento no sistema
+oficial se deu exclusivamente pela indisponibilidade de senhas institucionais perante o Tribunal
+Superior Eleitoral (TSE), cuja liberação ocorreu apenas em 16/06/2026 (id. 122369167).
+É relatório.
+Decido.
+A questão restringe-se à verificação de desídia ou omissão administrativa apta a autorizar a
+inclusão da filiação partidária fora do prazo regulamentar, nos termos do art. 19, § 2º, da Lei nº
+9.096/95 e do art. 11, § 2º, da Resolução TSE nº 23.596/2019.
+A documentação juntada aos autos demonstram que o requerente cumpriu as formalidades
+internas para o ingresso na agremiação em 04/04/2026, data-limite para o preenchimento da
+condição de elegibilidade relativa à filiação partidária para o pleito de 2026. A Ficha de Filiação
+
+-- 2 of 3 --
+
+Num. 122370340 - Pág. 2
+Assinado eletronicamente por: CLARISSA BRAGA MENDES - 04/08/2026 14:31:08
+https://pje1g-df.tse.jus.br/pje/Processo/ConsultaDocumento/listView.seam?x=26080414310867100000115304925
+Número do documento: 26080414310867100000115304925
+Este documento foi gerado pelo usuário 240.***.***-25 em 18/08/2026 14:41:06
+apresentada, id. 122367287, atesta o vínculo bilateral estabelecido entre o eleitor e o partido.
+A impossibilidade de processamento desse registro no sistema FILIA/TSE decorreu de severa
+disputa pela liderança nacional do PRTB. Conforme se extrai da decisão do TJDFT proferida
+em 11/03/2026 id. 81968519, foi reconhecida a necessidade de restabelecer o acesso do grupo
+liderado por Leonardo Alves de Araújo aos sistemas partidários. Todavia, a Certidão do SGIP,
+id. 122367288, comprova que a anotação da comissão executiva nacional e a consequente
+liberação de credenciais só foram efetivadas pela Secretaria de Tecnologia da Informação do
+TSE em 16/06/2026.
+Portando ficou demonstrado que a ausência de registro tempestivo não decorreu de desídia do
+eleitor ou de má-fé da agremiação, mas de uma impossibilidade material transitória decorrente
+de impasse administrativo-judicial no processamento das anotações partidárias junto o Tribunal
+Superior Eleitoral.
+O TSE tem consolidado entendimento de que, em sede de procedimento específico (§ 2º do art.
+19 da Lei nº 9.096/95), a ficha de filiação, quando corroborada por outros elementos de
+convicção e pelo reconhecimento expresso da própria agremiação, é prova idônea para
+comprovar o vínculo partidário preexistente (AgR-REspEl nº 0600052-17, Rel. Min. Sérgio
+Banhos, DJe 18/06/2021).
+No caso em exame, a manifestação de concordância do partido, id. 122369167, somada
+ao conjunto probatório coligido aos autos evidencia de forma inequívoca a regularidade do
+procedimento, o que afasta qualque indício de fraude ou de retroação indevida.
+Ante o exposto, DETERMINO a inclusão, no sistema FILIA, da filiação partidária de
+ALDERICO DA SILVA PINHEIRO FILHO ao PARTIDO RENOVADOR TRABALHISTA
+BRASILEIRO – PRTB, com data de retrativa a 04 de abril de 2026.
+Intime-se.
+Publique-se.
+Após, remeta-se ao Ministério Público Eleitoral. Nada vindo aos autos, arquive-se.
+
+-- 3 of 3 --
+

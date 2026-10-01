@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+
+# Environment and system
+.DS_Store
+Thumbs.db
+*.log
+
+# Raw large TSE zip archives (>100MB exceeds GitHub push limits)
+# Downloadable directly from TSE Dados Abertos (https://dadosabertos.tse.jus.br)
+docs/*.zip
+
+# Temporary development test scripts
+test_*.js
+check_*.ps1
+list_*.ps1
+inspect_*.ps1
+analyze_*.js
+peek_data.ps1

@@ -1,0 +1,212 @@
+[
+  {
+    "id": "q1_privatizacao",
+    "tema": "Economia & Estado",
+    "titulo": "Privatizações e Concessões",
+    "pergunta": "O Estado deve privatizar ou conceder à iniciativa privada empresas públicas e serviços como saneamento, metrô e bancos públicos?",
+    "eixo": "economic",
+    "opcoes": [
+      { "id": "a", "texto": "Concordo totalmente: O mercado é mais eficiente e o Estado deve focar apenas no essencial.", "valor": 1.0 },
+      { "id": "b", "texto": "Concordo com ressalvas: Privatizar empresas deficitárias, mantendo serviços sociais essenciais.", "valor": 0.5 },
+      { "id": "c", "texto": "Neutro / Depende do caso concreto.", "valor": 0.0 },
+      { "id": "d", "texto": "Discordo em parte: Manter empresas estratégicas sob controle estatal e buscar parcerias pontuais.", "valor": -0.5 },
+      { "id": "e", "texto": "Discordo totalmente: Setores estratégicos e serviços públicos devem ser 100% estatais e sob controle público.", "valor": -1.0 }
+    ]
+  },
+  {
+    "id": "q2_teto_gastos",
+    "tema": "Economia & Estado",
+    "titulo": "Controle Fiscal e Teto de Gastos",
+    "pergunta": "O equilíbrio fiscal e o controle rigoroso dos gastos públicos devem ser prioridade absoluta, mesmo que exijam cortes em programas e investimentos sociais?",
+    "eixo": "economic",
+    "opcoes": [
+      { "id": "a", "texto": "Concordo totalmente: Sem equilíbrio fiscal não há controle da inflação nem crescimento sustentável.", "valor": 1.0 },
+      { "id": "b", "texto": "Concordo: Responsabilidade fiscal com metas graduais e previsíveis.", "valor": 0.5 },
+      { "id": "c", "texto": "Neutro / Equilíbrio entre corte de privilégios e manutenção de investimentos.", "valor": 0.0 },
+      { "id": "d", "texto": "Discordo: O investimento público em infraestrutura e serviços essenciais não pode ser estrangulado por metas fiscais.", "valor": -0.5 },
+      { "id": "e", "texto": "Discordo totalmente: A prioridade deve ser o bem-estar da população e a garantia de direitos, e não o pagamento de juros.", "valor": -1.0 }
+    ]
+  },
+  {
+    "id": "q3_tributacao",
+    "tema": "Economia & Estado",
+    "titulo": "Tributação e Impostos",
+    "pergunta": "Qual deve ser a principal diretriz da reforma tributária brasileira?",
+    "eixo": "economic",
+    "opcoes": [
+      { "id": "a", "texto": "Redução drástica de impostos sobre empresas e corte de gastos para estimular o livre empreendedorismo.", "valor": 1.0 },
+      { "id": "b", "texto": "Simplificação tributária (IVA neutro) mantendo o nível atual de arrecadação.", "valor": 0.4 },
+      { "id": "c", "texto": "Neutro / Foco em desoneração seletiva de folha e tecnologia.", "valor": 0.0 },
+      { "id": "d", "texto": "Tributação progressiva: Reduzir impostos sobre consumo e elevar tributação sobre grandes fortunas e lucros e dividendos.", "valor": -0.6 },
+      { "id": "e", "texto": "Forte taxação dos super-ricos e do capital financeiro para financiar integralmente saúde, educação e moradia.", "valor": -1.0 }
+    ]
+  },
+  {
+    "id": "q4_leis_trabalhistas",
+    "tema": "Economia & Emprego",
+    "titulo": "Relações de Trabalho e CLT",
+    "pergunta": "Como você avalia a flexibilização das leis trabalhistas e o trabalho por aplicativos?",
+    "eixo": "economic",
+    "opcoes": [
+      { "id": "a", "texto": "Total liberdade contratual entre trabalhador e empregador, desregulamentando a CLT.", "valor": 1.0 },
+      { "id": "b", "texto": "Modernização das leis com menos encargos, facilitando a contratação.", "valor": 0.5 },
+      { "id": "c", "texto": "Regulamentação mínima com seguro de acidentes e previdência opcional.", "valor": 0.0 },
+      { "id": "d", "texto": "Garantia de direitos básicos e piso salarial para trabalhadores informais e de plataformas.", "valor": -0.6 },
+      { "id": "e", "texto": "Revogação da reforma trabalhista e garantia integral de direitos da CLT a todas as categorias.", "valor": -1.0 }
+    ]
+  },
+  {
+    "id": "q5_saude_publica",
+    "tema": "Saúde & Gestão",
+    "titulo": "Modelo de Gestão da Saúde",
+    "pergunta": "Como o governo deve enfrentar as filas e a gestão de hospitais públicos e postos de saúde?",
+    "eixo": "economic",
+    "opcoes": [
+      { "id": "a", "texto": "Parcerias com hospitais privados e entrega da gestão hospitalar a Organizações Sociais (OSs) ou vouchers de consultas.", "valor": 0.9 },
+      { "id": "b", "texto": "Contratação pontual de leitos e exames na rede privada para zerar filas emergenciais.", "valor": 0.3 },
+      { "id": "c", "texto": "Foco exclusivo em digitalização e prontuário eletrônico unificado.", "valor": 0.0 },
+      { "id": "d", "texto": "Fortalecimento do SUS 100% público com novos concursos e planos de carreira próprios.", "valor": -0.6 },
+      { "id": "e", "texto": "Estatização total da saúde, revogação de contratos com OSs e triplicação do orçamento da saúde pública.", "valor": -1.0 }
+    ]
+  },
+  {
+    "id": "q6_educacao",
+    "tema": "Educação & Jovens",
+    "titulo": "Modelo Educacional e Escolas Cívico-Militares",
+    "pergunta": "Qual modelo pedagógico e estrutural deve ser incentivado nas escolas públicas?",
+    "eixo": "social",
+    "opcoes": [
+      { "id": "a", "texto": "Expansão de escolas cívico-militares com foco em disciplina, ordem, patriotismo e Escola sem Partido.", "valor": 0.9 },
+      { "id": "b", "texto": "Parcerias público-privadas e vouchers educacionais onde o setor privado atenda melhor.", "valor": 0.5 },
+      { "id": "c", "texto": "Foco prioritário em educação técnica e profissionalizante ligada às indústrias.", "valor": 0.0 },
+      { "id": "d", "texto": "Ensino público laico, democrático, com valorização salarial dos professores e escola em tempo integral.", "valor": -0.6 },
+      { "id": "e", "texto": "Educação emancipatória, autônoma, antirracista, contra qualquer militarização escolar e com gestão democrática das escolas.", "valor": -1.0 }
+    ]
+  },
+  {
+    "id": "q7_programas_sociais",
+    "tema": "Assistência Social",
+    "titulo": "Programas de Transferência de Renda",
+    "pergunta": "Qual o papel de programas como Bolsa Família / Prato Cheio na sociedade?",
+    "eixo": "economic",
+    "opcoes": [
+      { "id": "a", "texto": "Devem ser temporários e ter prazo improrrogável de término para não desestimular o trabalho formal.", "valor": 0.9 },
+      { "id": "b", "texto": "Manter os programas com exigências rigorosas de contrapartida de emprego e capacitação.", "valor": 0.4 },
+      { "id": "c", "texto": "Foco no combate pontual à miséria extrema com auditoria antifraude contínua.", "valor": 0.0 },
+      { "id": "d", "texto": "Direito fundamental que garante dignidade básica, devendo ser expandido e reajustado acima da inflação.", "valor": -0.6 },
+      { "id": "e", "texto": "Implementação de uma Renda Básica de Cidadania Universal incondicional e universal para todos os cidadãos.", "valor": -1.0 }
+    ]
+  },
+  {
+    "id": "q8_armas",
+    "tema": "Segurança Pública",
+    "titulo": "Porte e Posse de Armas",
+    "pergunta": "Cidadãos cumpridores da lei devem ter facilidade para adquirir e portar armas de fogo para sua legítima defesa?",
+    "eixo": "social",
+    "opcoes": [
+      { "id": "a", "texto": "Concordo totalmente: O porte de armas é um direito individual inalienável de autodefesa e liberdade.", "valor": 1.0 },
+      { "id": "b", "texto": "Concordo em parte: Posse facilitada em propriedades rurais e perímetros residenciais.", "valor": 0.5 },
+      { "id": "c", "texto": "Neutro / Manter as regras do Estatuto do Desarmamento sem alterações.", "valor": 0.0 },
+      { "id": "d", "texto": "Discordo em parte: O monopólio da força deve ser das polícias, com controle rigoroso de arsenais civis.", "valor": -0.6 },
+      { "id": "e", "texto": "Discordo totalmente: Mais armas em circulação aumentam a violência, feminicídios e acidentes; desarmamento amplo imediato.", "valor": -1.0 }
+    ]
+  },
+  {
+    "id": "q9_seguranca_penal",
+    "tema": "Segurança Pública",
+    "titulo": "Rigor Penal e Sistema Prisional",
+    "pergunta": "Como enfrentar a criminalidade violenta e as facções no Brasil?",
+    "eixo": "social",
+    "opcoes": [
+      { "id": "a", "texto": "Endurecimento drástico das penas, fim de saidinhas e progressão de regime, e redução da maioridade penal para 16 anos.", "valor": 0.9 },
+      { "id": "b", "texto": "Construção de presídios de segurança máxima e corte de regalias de detentos.", "valor": 0.5 },
+      { "id": "c", "texto": "Foco prioritário em inteligência financeira para descapitalizar facções e lavagem de dinheiro.", "valor": 0.0 },
+      { "id": "d", "texto": "Prevenção social na infância e juventude aliada a investimentos em ressocialização e trabalho no cárcere.", "valor": -0.5 },
+      { "id": "e", "texto": "Superação do superencarceramento, descriminalização de condutas não violentas e fim da política de guerra às drogas.", "valor": -1.0 }
+    ]
+  },
+  {
+    "id": "q10_cameras_policiais",
+    "tema": "Segurança Pública",
+    "titulo": "Câmeras Corporais nas Polícias",
+    "pergunta": "O uso de câmeras operacionais corporais em uniformes de policiais militares e civis deve ser obrigatório?",
+    "eixo": "social",
+    "opcoes": [
+      { "id": "a", "texto": "Discordo totalmente: O policial não pode ter sua atuação tolhida ou vigiada em situações de risco de vida.", "valor": 0.9 },
+      { "id": "b", "texto": "Discordo em parte: Uso restrito e facultativo, acionado apenas por iniciativa do próprio agente.", "valor": 0.5 },
+      { "id": "c", "texto": "Neutro / Necessário avaliar dados de eficácia e custo operacional.", "valor": 0.0 },
+      { "id": "d", "texto": "Concordo: Protege tanto o cidadão contra abusos quanto o policial contra falsas acusações.", "valor": -0.6 },
+      { "id": "e", "texto": "Concordo totalmente: Medida indispensável de transparência, combate à letalidade policial e controle democrático da força pública.", "valor": -1.0 }
+    ]
+  },
+  {
+    "id": "q11_meio_ambiente_agro",
+    "tema": "Meio Ambiente & Agro",
+    "titulo": "Preservação Ecológica vs Expansão Econômica",
+    "pergunta": "Diante de projetos de infraestrutura ou expansão agrícola em áreas de preservação ou do Cerrado/Amazônia, qual deve ser a postura do Estado?",
+    "eixo": "economic",
+    "opcoes": [
+      { "id": "a", "texto": "Priorizar o agronegócio e a infraestrutura, simplificando licenças ambientais e acabando com a 'indústria de multas'.", "valor": 0.9 },
+      { "id": "b", "texto": "Equilíbrio pragmático com flexibilização de prazos para obras que gerem emprego e renda.", "valor": 0.4 },
+      { "id": "c", "texto": "Neutro / Cumprir a legislação atual com compensação financeira pelas emissões.", "valor": 0.0 },
+      { "id": "d", "texto": "Rigor na proteção ecológica e combate enérgico a invasões, grilagem de terras públicas e desmatamento ilegal.", "valor": -0.6 },
+      { "id": "e", "texto": "Desmatamento zero imediato, demarcação integral de terras indígenas/quilombolas e prioridade irrestrita à emergência climática.", "valor": -1.0 }
+    ]
+  },
+  {
+    "id": "q12_transporte_tarifa_zero",
+    "tema": "Mobilidade & Cidade",
+    "titulo": "Transporte Público e Tarifa Zero",
+    "pergunta": "O transporte público coletivo (ônibus e metrô) deve caminhar para a gratuidade universal (Tarifa Zero) bancada pelo orçamento público?",
+    "eixo": "economic",
+    "opcoes": [
+      { "id": "a", "texto": "Discordo totalmente: Quem usa deve pagar. Tarifa zero quebra as contas públicas e incentiva o desperdício.", "valor": 0.9 },
+      { "id": "b", "texto": "Discordo: O modelo deve ser de concessão privada com tarifa módica e subsídio apenas a estudantes e idosos.", "valor": 0.4 },
+      { "id": "c", "texto": "Neutro / Estudo de viabilidade em linhas circulares específicas ou finais de semana.", "valor": 0.0 },
+      { "id": "d", "texto": "Concordo com avanço gradual da gratuidade nas cidades para estimular o comércio e reduzir poluição.", "valor": -0.5 },
+      { "id": "e", "texto": "Concordo totalmente: O transporte é um direito social constitucional como saúde e educação, devendo ser 100% público e gratuito.", "valor": -1.0 }
+    ]
+  },
+  {
+    "id": "q13_fundo_eleitoral",
+    "tema": "Governança & Política",
+    "titulo": "Fundo Eleitoral (Fundão)",
+    "pergunta": "O financiamento de campanhas políticas deve ser feito com recursos públicos (Fundo Eleitoral de bilhões de reais)?",
+    "eixo": "governance",
+    "opcoes": [
+      { "id": "a", "texto": "Extinção imediata do Fundo Eleitoral: Político e campanha devem ser financiados voluntariamente por seus apoiadores.", "valor": 1.0 },
+      { "id": "b", "texto": "Redução drástica do valor do fundo, com teto bem mais baixo de gastos de campanha.", "valor": 0.5 },
+      { "id": "c", "texto": "Neutro / Manutenção dos valores corrigidos pela inflação.", "valor": 0.0 },
+      { "id": "d", "texto": "O financiamento público é necessário para evitar a captura de políticos pelo poder econômico privado.", "valor": -0.5 },
+      { "id": "e", "texto": "Financiamento exclusivamente público e igualitário para todos os partidos, proibindo qualquer doação de grandes empresários.", "valor": -1.0 }
+    ]
+  },
+  {
+    "id": "q14_maquina_publica",
+    "tema": "Gestão Pública",
+    "titulo": "Reforma Administrativa e Cargos Comissionados",
+    "pergunta": "Como deve ser estruturada a gestão pública e o funcionalismo?",
+    "eixo": "governance",
+    "opcoes": [
+      { "id": "a", "texto": "Fim da estabilidade irrestrita do servidor, avaliação rigorosa por metas e corte massivo de cargos comissionados.", "valor": 0.9 },
+      { "id": "b", "texto": "Modernização com redução de secretarias e digitalização de serviços para enxugar a folha.", "valor": 0.5 },
+      { "id": "c", "texto": "Neutro / Manter a estabilidade nas carreiras típicas de Estado com processo seletivo para comissionados.", "valor": 0.0 },
+      { "id": "d", "texto": "Fortalecimento do serviço público por meio de concursos periódicos e planos de carreira motivadores.", "valor": -0.5 },
+      { "id": "e", "texto": "Defesa intransigente da estabilidade pública contra qualquer reforma que precarize os serviços sociais aos mais pobres.", "valor": -1.0 }
+    ]
+  },
+  {
+    "id": "q15_costumes_liberdades",
+    "tema": "Valores & Sociedade",
+    "titulo": "Valores Tradicionais e Direitos Civis",
+    "pergunta": "Qual deve ser a orientação do Estado em relação a valores morais, família e direitos civis?",
+    "eixo": "social",
+    "opcoes": [
+      { "id": "a", "texto": "O Estado e as leis devem defender ativamente os valores cristãos, a família tradicional e a moralidade pública.", "valor": 1.0 },
+      { "id": "b", "texto": "Respeito às tradições culturais e religiosas com cautela diante de mudanças sociais aceleradas.", "valor": 0.5 },
+      { "id": "c", "texto": "Estado laico com foco estrito na gestão econômica e respeito mútuo.", "valor": 0.0 },
+      { "id": "d", "texto": "Defesa irrestrita das liberdades individuais, diversidade, igualdade racial e direitos civis de minorias.", "valor": -0.6 },
+      { "id": "e", "texto": "Estado laico radical, combate frontal ao patriarcado, ao racismo estrutural e proteção plena a todas as identidades e diversidades.", "valor": -1.0 }
+    ]
+  }
+]
