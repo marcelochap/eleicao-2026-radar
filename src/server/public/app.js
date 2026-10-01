@@ -12,7 +12,11 @@ const state = {
   activeOrderBy: 'default',
   searchQuery: '',
   selectedCandidateDossier: null,
-  graphData: null
+  graphData: null,
+  matchFilterGender: '',
+  matchFilterRace: '',
+  matchFilterParty: '',
+  latestEvaluationResult: null
 };
 
 // DOM Elements
@@ -110,11 +114,20 @@ async function loadParties() {
     const parties = await res.json();
     state.parties = parties;
 
+    const matchFilterPartido = document.getElementById('match-filter-partido');
+
     parties.forEach(p => {
       const opt = document.createElement('option');
       opt.value = p.sg_partido;
       opt.textContent = `${p.sg_partido} (${p.espectro_estimado}) - ${p.total_candidatos} cands`;
       filterPartido.appendChild(opt);
+
+      if (matchFilterPartido) {
+        const mOpt = document.createElement('option');
+        mOpt.value = p.sg_partido;
+        mOpt.textContent = `${p.sg_partido} - ${p.nm_partido || p.sg_partido}`;
+        matchFilterPartido.appendChild(mOpt);
+      }
     });
   } catch (err) {
     console.error('Erro ao carregar partidos:', err);
@@ -568,6 +581,7 @@ function setupQuiz() {
 
   btnResetQuiz.addEventListener('click', () => {
     state.userAnswers = {};
+    state.latestEvaluationResult = null;
     document.querySelectorAll('.quiz-option').forEach(l => {
       l.classList.remove('selected');
       const input = l.querySelector('input');
@@ -576,10 +590,43 @@ function setupQuiz() {
     updateQuizProgress();
     userQuadrantBadge.textContent = 'Responda ao questionário para ver sua posição';
     userProfileDesc.textContent = 'Seus pontos serão plotados em tempo real no plano cartesiano ao lado dos candidatos e partidos das Eleições 2026.';
-    matchCandidateList.innerHTML = `<div class="empty-state">Responda ao questionário para desbloquear o ranking de aderência.</div>`;
+    
+    const cargoContainer = document.getElementById('cargo-results-container');
+    if (cargoContainer) {
+      cargoContainer.innerHTML = `<div class="empty-state">Responda ao questionário e clique em 'Calcular Meu Alinhamento' para ver os Top 3 por cargo.</div>`;
+    }
     matchPartyList.innerHTML = `<div class="empty-state">...</div>`;
     drawCompass(0, 0, false);
   });
+
+  // Eventos de Filtro de Afinidade
+  const genderPills = document.querySelectorAll('#match-gender-pills .pill-btn');
+  genderPills.forEach(btn => {
+    btn.addEventListener('click', () => {
+      genderPills.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.matchFilterGender = btn.dataset.gender;
+      renderFilteredCargoMatches();
+    });
+  });
+
+  const racePills = document.querySelectorAll('#match-race-pills .pill-btn');
+  racePills.forEach(btn => {
+    btn.addEventListener('click', () => {
+      racePills.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.matchFilterRace = btn.dataset.race;
+      renderFilteredCargoMatches();
+    });
+  });
+
+  const matchPartySelect = document.getElementById('match-filter-partido');
+  if (matchPartySelect) {
+    matchPartySelect.addEventListener('change', (e) => {
+      state.matchFilterParty = e.target.value;
+      renderFilteredCargoMatches();
+    });
+  }
 }
 
 async function evaluateQuizAnswers() {
@@ -597,43 +644,130 @@ async function evaluateQuizAnswers() {
     });
 
     const result = await res.json();
+    state.latestEvaluationResult = result;
     const prof = result.userProfile;
 
     userQuadrantBadge.textContent = `${prof.quadrant} (Econ: ${prof.economic > 0 ? '+' : ''}${prof.economic}, Social: ${prof.social > 0 ? '+' : ''}${prof.social})`;
     userProfileDesc.textContent = prof.description;
 
     drawCompass(prof.economic, prof.social, true);
-    renderMatchRankings(result.topCandidates, result.topParties);
+    renderFilteredCargoMatches();
+    renderPartyRankings(result.topParties);
   } catch (err) {
     console.error('Erro ao avaliar questionário:', err);
   }
 }
 
-function renderMatchRankings(topCandidates, topParties) {
-  matchCandidateList.innerHTML = '';
-  topCandidates.slice(0, 6).forEach(c => {
-    let badgeClass = 'match-high';
-    if (c.fit_percentage < 65) badgeClass = 'match-low';
-    else if (c.fit_percentage < 80) badgeClass = 'match-med';
+function renderFilteredCargoMatches() {
+  const container = document.getElementById('cargo-results-container');
+  if (!container) return;
 
-    const card = document.createElement('div');
-    card.className = 'match-card';
-    card.innerHTML = `
-      <div class="match-info">
-        <h5>${c.nome_urna} (${c.partido})</h5>
-        <p>${c.cargo} · ${c.tem_proposta ? 'Com Plano TSE' : 'Sem Plano Individual'}</p>
+  if (!state.latestEvaluationResult || !state.latestEvaluationResult.allCandidatesRanked) {
+    container.innerHTML = `<div class="empty-state">Responda ao questionário e clique em 'Calcular Meu Alinhamento' para ver os Top 3 por cargo.</div>`;
+    return;
+  }
+
+  let candidates = state.latestEvaluationResult.allCandidatesRanked;
+
+  // Aplica Filtros de Gênero, Raça e Partido
+  if (state.matchFilterGender) {
+    candidates = candidates.filter(c => (c.genero || '').toUpperCase() === state.matchFilterGender);
+  }
+  if (state.matchFilterRace) {
+    candidates = candidates.filter(c => (c.cor_raca || '').toUpperCase().includes(state.matchFilterRace));
+  }
+  if (state.matchFilterParty) {
+    candidates = candidates.filter(c => (c.partido || '').toUpperCase() === state.matchFilterParty);
+  }
+
+  const CARGOS = [
+    { key: 'PRESIDENTE', label: '🇧🇷 Presidente da República' },
+    { key: 'GOVERNADOR', label: '🏛️ Governador do Distrito Federal' },
+    { key: 'SENADOR', label: '🏛️ Senador' },
+    { key: 'DEPUTADO FEDERAL', label: '🏛️ Deputado Federal' },
+    { key: 'DEPUTADO DISTRITAL', label: '🏛️ Deputado Distrital' }
+  ];
+
+  let html = '';
+  let totalFound = 0;
+
+  CARGOS.forEach(cargo => {
+    const top3 = candidates.filter(c => c.cargo === cargo.key).slice(0, 3);
+    totalFound += top3.length;
+
+    html += `
+      <div class="cargo-group">
+        <div class="cargo-group-header">
+          <div class="cargo-group-title">
+            <span>${cargo.label}</span>
+          </div>
+          <span style="font-size: 11px; font-weight: 700; color: var(--text-subtle);">Top 3 com Maior Fit</span>
+        </div>
+        ${top3.length > 0 ? top3.map(c => {
+          let badgeClass = 'match-high';
+          if (c.fit_percentage < 65) badgeClass = 'match-low';
+          else if (c.fit_percentage < 80) badgeClass = 'match-med';
+
+          const isWoman = (c.genero || '').toUpperCase() === 'FEMININO';
+          const genderBadge = isWoman ? '<span class="tag-mini tag-female">♀ Mulher</span>' : '<span class="tag-mini tag-male">♂ Homem</span>';
+          const raceBadge = c.cor_raca && c.cor_raca !== 'NÃO INFORMADO' ? `<span class="tag-mini">${c.cor_raca}</span>` : '';
+          const propBadge = c.tem_proposta ? '<span class="tag-mini" style="color: #34d399; border-color: rgba(52, 211, 153, 0.3);">📄 Plano TSE</span>' : '';
+
+          return `
+            <div class="cargo-candidate-card" data-sq="${c.sq_candidato}" title="Clique para abrir Dossiê 360º">
+              <div style="flex: 1;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <strong style="color: #fff; font-size: 14px;">${escapeHtml(c.nome_urna)}</strong>
+                  <span style="font-size: 11px; color: var(--text-muted); font-weight: 700;">${c.partido} · Nº ${c.numero}</span>
+                </div>
+                <div style="font-size: 11px; color: var(--text-subtle); margin-top: 2px;">${escapeHtml(c.nome_completo || c.nome_urna)}</div>
+                <div class="cand-meta-tags">
+                  ${genderBadge}
+                  ${raceBadge}
+                  ${propBadge}
+                </div>
+              </div>
+              <div style="text-align: right; margin-left: 12px;">
+                <div class="match-badge ${badgeClass}">${c.fit_percentage}% Fit</div>
+                <div style="font-size: 10px; color: var(--accent-secondary); margin-top: 4px; font-weight: 600;">Ver Dossiê 360º ↗</div>
+              </div>
+            </div>
+          `;
+        }).join('') : `
+          <div style="font-size: 12px; color: var(--text-subtle); padding: 12px; background: rgba(255,255,255,0.02); border-radius: var(--radius-sm); border: 1px dashed var(--border-color);">
+            Nenhuma candidata/candidato encontrado para este cargo com os filtros selecionados.
+          </div>
+        `}
       </div>
-      <div class="match-badge ${badgeClass}">${c.fit_percentage}% Fit</div>
     `;
-
-    card.addEventListener('click', () => {
-      openCandidateDossier(c.sq_candidato);
-    });
-
-    matchCandidateList.appendChild(card);
   });
 
+  if (totalFound === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <h5>Nenhum candidato encontrado com os filtros atuais</h5>
+        <p style="margin-top: 4px;">Tente alterar os filtros de gênero (${state.matchFilterGender || 'Todos'}), etnia (${state.matchFilterRace || 'Todas'}) ou partido.</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = html;
+
+  // Event listener para abrir Dossiê 360º ao clicar no card ou nome
+  container.querySelectorAll('.cargo-candidate-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const sq = card.dataset.sq;
+      if (sq) openCandidateDossier(sq);
+    });
+  });
+}
+
+function renderPartyRankings(topParties) {
+  const matchPartyList = document.getElementById('match-party-list');
+  if (!matchPartyList) return;
   matchPartyList.innerHTML = '';
+
   topParties.slice(0, 5).forEach(p => {
     let badgeClass = 'match-high';
     if (p.fit_percentage < 65) badgeClass = 'match-low';
@@ -644,7 +778,7 @@ function renderMatchRankings(topCandidates, topParties) {
     card.innerHTML = `
       <div class="match-info">
         <h5>${p.sigla} (${p.espectro})</h5>
-        <p>${p.resumo.substring(0, 55)}...</p>
+        <p>${p.resumo ? p.resumo.substring(0, 55) + '...' : ''}</p>
       </div>
       <div class="match-badge ${badgeClass}">${p.fit_percentage}% Fit</div>
     `;

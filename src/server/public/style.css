@@ -1038,6 +1038,132 @@ body {
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 }
 
+/* Match Filters Box */
+.match-filters-box {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.match-filter-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.match-filter-item label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-subtle);
+}
+.filter-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.pill-btn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.pill-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+.pill-btn.active {
+  background: var(--accent-primary);
+  color: #fff;
+  border-color: var(--accent-primary);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
+}
+.match-select {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 12px;
+  outline: none;
+  cursor: pointer;
+}
+.match-select option {
+  background: var(--bg-secondary);
+}
+
+/* Cargo Grouping */
+.cargo-group {
+  margin-bottom: 22px;
+}
+.cargo-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.cargo-group-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.cargo-candidate-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.cargo-candidate-card:hover {
+  border-color: var(--accent-primary);
+  background: var(--bg-card-hover);
+  transform: translateX(4px);
+}
+.cand-meta-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+.tag-mini {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-muted);
+}
+.tag-female {
+  background: rgba(236, 72, 153, 0.15);
+  color: #f472b6;
+  border: 1px solid rgba(236, 72, 153, 0.3);
+}
+.tag-male {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
 /* Responsiveness */
 @media (max-width: 960px) {
   .compass-layout {

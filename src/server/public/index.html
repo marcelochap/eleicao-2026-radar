@@ -190,12 +190,49 @@
           </div>
 
           <div class="match-rankings-section">
-            <h4>Candidatos com Maior Afinidade Ideológica</h4>
-            <div class="match-list" id="match-candidate-list">
-              <div class="empty-state">Responda ao questionário para desbloquear o ranking de aderência.</div>
+            <div class="match-header-row">
+              <h4>🎯 Candidatos com Maior Afinidade Ideológica</h4>
+              <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Filtre o resultado por perfil representativo e veja o Top 3 por cargo eleitoral.</p>
             </div>
 
-            <h4 style="margin-top: 24px;">Partidos com Maior Afinidade</h4>
+            <!-- Filtros de Afinidade -->
+            <div class="match-filters-box">
+              <div class="match-filter-item">
+                <label>Gênero:</label>
+                <div class="filter-pills" id="match-gender-pills">
+                  <button class="pill-btn active" data-gender="">Todos</button>
+                  <button class="pill-btn" data-gender="FEMININO">♀ Mulheres</button>
+                  <button class="pill-btn" data-gender="MASCULINO">♂ Homens</button>
+                </div>
+              </div>
+
+              <div class="match-filter-item">
+                <label>Etnia / Cor Declarada:</label>
+                <div class="filter-pills" id="match-race-pills">
+                  <button class="pill-btn active" data-race="">Todas</button>
+                  <button class="pill-btn" data-race="PRETA">Preta</button>
+                  <button class="pill-btn" data-race="PARDA">Parda</button>
+                  <button class="pill-btn" data-race="INDÍGENA">Indígena</button>
+                  <button class="pill-btn" data-race="BRANCA">Branca</button>
+                  <button class="pill-btn" data-race="AMARELA">Amarela</button>
+                </div>
+              </div>
+
+              <div class="match-filter-item">
+                <label for="match-filter-partido">Partido:</label>
+                <select id="match-filter-partido" class="match-select">
+                  <option value="">Todos os Partidos</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Top 3 Por Cargo Político -->
+            <div class="cargo-results-container" id="cargo-results-container">
+              <div class="empty-state">Responda ao questionário e clique em 'Calcular Meu Alinhamento' para ver os Top 3 por cargo.</div>
+            </div>
+
+            <!-- Partidos com Maior Afinidade -->
+            <h4 style="margin-top: 28px; margin-bottom: 12px;">🏛️ Partidos com Maior Afinidade</h4>
             <div class="match-list" id="match-party-list">
               <div class="empty-state">...</div>
             </div>

@@ -55,7 +55,8 @@ export function calculateAlignment(userAnswers, customWeights = {}) {
   // Carrega candidatos do banco de dados
   const db = getDatabase();
   const allCandidates = db.prepare(`
-    SELECT sq_candidato, nr_candidato, nm_urna_candidato, ds_cargo, sg_partido, nm_coligacao,
+    SELECT sq_candidato, nr_candidato, nm_urna_candidato, nm_candidato, ds_cargo, sg_partido, nm_coligacao,
+           ds_genero, ds_cor_raca, ds_ocupacao,
            spectrum_economic, spectrum_social, spectrum_governance, tem_proposta, total_bens,
            total_receitas, total_fundo_eleitoral, qtd_certidoes
     FROM candidates
@@ -80,9 +81,13 @@ export function calculateAlignment(userAnswers, customWeights = {}) {
       sq_candidato: c.sq_candidato,
       numero: c.nr_candidato,
       nome_urna: c.nm_urna_candidato,
+      nome_completo: c.nm_candidato,
       cargo: c.ds_cargo,
       partido: c.sg_partido,
       coligacao: c.nm_coligacao,
+      genero: c.ds_genero || 'NÃO INFORMADO',
+      cor_raca: c.ds_cor_raca || 'NÃO INFORMADO',
+      ocupacao: c.ds_ocupacao || '',
       fit_percentage: fitPercentage,
       spectrum: {
         economic: c.spectrum_economic,
@@ -120,10 +125,20 @@ export function calculateAlignment(userAnswers, customWeights = {}) {
     };
   }).sort((a, b) => b.fit_percentage - a.fit_percentage);
 
+  // Agrupamento Top por Cargo
+  const topByCargo = {
+    'PRESIDENTE': candidateRankings.filter(c => c.cargo === 'PRESIDENTE').slice(0, 10),
+    'GOVERNADOR': candidateRankings.filter(c => c.cargo === 'GOVERNADOR').slice(0, 10),
+    'SENADOR': candidateRankings.filter(c => c.cargo === 'SENADOR').slice(0, 10),
+    'DEPUTADO FEDERAL': candidateRankings.filter(c => c.cargo === 'DEPUTADO FEDERAL').slice(0, 10),
+    'DEPUTADO DISTRITAL': candidateRankings.filter(c => c.cargo === 'DEPUTADO DISTRITAL').slice(0, 10)
+  };
+
   return {
     userProfile,
     topCandidates: candidateRankings.slice(0, 15),
     topParties: partyRankings.slice(0, 8),
+    topByCargo,
     allCandidatesRanked: candidateRankings
   };
 }
