@@ -247,23 +247,67 @@
     <div class="container">
       <div class="graph-header">
         <div>
-          <h3>Grafo de Conhecimento Eleitoral (Graphify Standard)</h3>
-          <p>Rede determinística de conexões: Candidatos, Partidos, Coligações, Planos de Governo, Patrimônio e Certidões Judiciais. Cada aresta possui explicação formal.</p>
+          <div class="graph-badge">KNOWLEDGE GRAPH • GRAPHIFY STANDARD</div>
+          <h3>Mapeador de Relações Eleitorais & Coligações</h3>
+          <p>Navegue na teia oficial de candidatos, planos de governo registrados, coligações partidárias e integridade.</p>
         </div>
         <div class="graph-legend">
           <span class="legend-item"><span class="dot cand-dot"></span> Candidato</span>
           <span class="legend-item"><span class="dot party-dot"></span> Partido</span>
           <span class="legend-item"><span class="dot prop-dot"></span> Plano de Governo</span>
-          <span class="legend-item"><span class="dot asset-dot"></span> Patrimônio Declarado</span>
         </div>
       </div>
 
-      <div class="graph-canvas-container">
-        <canvas id="networkCanvas" width="1140" height="650"></canvas>
-        <div class="graph-node-details" id="graph-node-details">
-          <h4>Detalhe da Conexão</h4>
-          <p id="graph-details-text">Clique em qualquer nó ou aresta do grafo para inspecionar os metadados e a relação explicada.</p>
+      <!-- Toolbar de Ação e Filtro de Foco -->
+      <div class="graph-toolbar">
+        <div class="graph-presets">
+          <span class="toolbar-label">Visão Rápida:</span>
+          <button class="graph-preset-btn active" data-preset="all">🌟 Todos com Plano</button>
+          <button class="graph-preset-btn" data-preset="gdf">📍 Disputa GDF (11 Gov)</button>
+          <button class="graph-preset-btn" data-preset="pres">🇧🇷 Presidenciáveis</button>
+          <button class="graph-preset-btn" data-preset="parties">🏛️ Partidos & Alianças</button>
         </div>
+
+        <div class="graph-focus-wrapper">
+          <label for="graph-focus-select" class="toolbar-label">Foco Individual:</label>
+          <select id="graph-focus-select" class="graph-select">
+            <option value="">🎯 Selecione um Político para Isolar a Constelação...</option>
+          </select>
+          <button id="btn-reset-graph" class="btn-icon" title="Resetar Visualização / Centralizar">⟲ Centralizar</button>
+        </div>
+      </div>
+
+      <!-- Workspace Dividido: Canvas Interativo + Inspector Panel Lateral -->
+      <div class="graph-workspace">
+        <div class="graph-canvas-wrapper">
+          <canvas id="networkCanvas" width="900" height="620"></canvas>
+          <div class="canvas-controls-overlay">
+            <button id="btn-zoom-in" title="Aproximar Zoom">+</button>
+            <button id="btn-zoom-out" title="Afastar Zoom">−</button>
+            <button id="btn-zoom-reset" title="Restaurar Escala">100%</button>
+          </div>
+          <div class="canvas-hint-overlay">
+            <span>💡 <strong>Dica:</strong> Role para zoom • Arraste o fundo para mover • Passe o mouse para isolar • Clique no nó para abrir o painel</span>
+          </div>
+        </div>
+
+        <!-- Inspector Lateral Dinâmico (Glassmorphism) -->
+        <aside class="graph-inspector-panel" id="graph-inspector-panel">
+          <div class="inspector-empty" id="inspector-empty">
+            <div class="inspector-empty-icon">🛰️</div>
+            <h4>Inspetor de Relações</h4>
+            <p>Passe o mouse ou clique em qualquer nó do grafo para visualizar seu raio de conexões, coligações e documentos protocolados no TSE.</p>
+            <div class="inspector-tips">
+              <div class="tip-item">✨ <strong>Nós Roxo/Azul:</strong> Candidatos oficiais</div>
+              <div class="tip-item">🏛️ <strong>Nós Ciano:</strong> Partidos registrados</div>
+              <div class="tip-item">📄 <strong>Nós Verde:</strong> Planos de governo analisados</div>
+            </div>
+          </div>
+
+          <div class="inspector-card-active" id="inspector-active" style="display: none;">
+            <!-- Inserido dinamicamente via JS -->
+          </div>
+        </aside>
       </div>
     </div>
   </section>
