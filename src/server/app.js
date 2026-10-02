@@ -48,6 +48,7 @@ app.get('/api/candidates', (req, res) => {
       cargo: req.query.cargo || undefined,
       partido: req.query.partido || undefined,
       uf: req.query.uf || undefined,
+      espectro: req.query.espectro || undefined,
       temProposta: req.query.temProposta === 'true' ? true : undefined,
       minPatrimonio: req.query.minPatrimonio ? Number(req.query.minPatrimonio) : undefined,
       maxPatrimonio: req.query.maxPatrimonio ? Number(req.query.maxPatrimonio) : undefined,
@@ -57,6 +58,23 @@ app.get('/api/candidates', (req, res) => {
 
     const candidates = getAllCandidates(filters);
     res.json({ count: candidates.length, candidates });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Lista de Rótulos de Espectro Político
+app.get('/api/spectrums', (req, res) => {
+  try {
+    const db = getDatabase();
+    const rows = db.prepare(`
+      SELECT espectro_politico as label, count(*) as count 
+      FROM candidates 
+      WHERE espectro_politico IS NOT NULL AND espectro_politico != ''
+      GROUP BY espectro_politico 
+      ORDER BY count DESC
+    `).all();
+    res.json(rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -79,7 +97,10 @@ app.get('/api/candidates/:id', (req, res) => {
 app.get('/api/search', (req, res) => {
   try {
     const query = req.query.q || '';
-    const results = searchPolitician(query);
+    const options = {
+      espectro: req.query.espectro || undefined
+    };
+    const results = searchPolitician(query, options);
     res.json(results);
   } catch (err) {
     res.status(500).json({ error: err.message });

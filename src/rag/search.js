@@ -18,15 +18,20 @@ export function searchPolitician(query, options = {}) {
   if (!cleanQuery) return { candidates: [], parties: [] };
 
   // 1. Busca direta por nome ou número
-  const directCandidates = db.prepare(`
+  let directSql = `
     SELECT * FROM candidates 
-    WHERE nm_urna_candidato LIKE ? 
+    WHERE (nm_urna_candidato LIKE ? 
        OR nm_candidato LIKE ? 
        OR nr_candidato = ?
-       OR sq_candidato = ?
-    ORDER BY CASE WHEN ds_cargo = 'GOVERNADOR' THEN 1 WHEN ds_cargo = 'PRESIDENTE' THEN 2 WHEN ds_cargo = 'SENADOR' THEN 3 ELSE 4 END
-    LIMIT 10
-  `).all(`%${cleanQuery}%`, `%${cleanQuery}%`, cleanQuery, cleanQuery);
+       OR sq_candidato = ?)
+  `;
+  const directParams = [`%${cleanQuery}%`, `%${cleanQuery}%`, cleanQuery, cleanQuery];
+  if (options.espectro) {
+    directSql += ` AND espectro_politico = ?`;
+    directParams.push(options.espectro);
+  }
+  directSql += ` ORDER BY CASE WHEN ds_cargo = 'GOVERNADOR' THEN 1 WHEN ds_cargo = 'PRESIDENTE' THEN 2 WHEN ds_cargo = 'SENADOR' THEN 3 ELSE 4 END LIMIT 10`;
+  const directCandidates = db.prepare(directSql).all(...directParams);
 
   // 2. Se não encontrar, tenta via FTS5
   let candidates = directCandidates;
@@ -84,6 +89,10 @@ export function getAllCandidates(filters = {}) {
   if (filters.uf) {
     sql += ` AND sg_uf = ?`;
     params.push(filters.uf.toUpperCase());
+  }
+  if (filters.espectro) {
+    sql += ` AND espectro_politico = ?`;
+    params.push(filters.espectro);
   }
   if (filters.temProposta === true) {
     sql += ` AND tem_proposta = 1`;

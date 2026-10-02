@@ -8,7 +8,7 @@ const state = {
   userAnswers: {},
   activeFilterCargo: '',
   activeFilterPartido: '',
-  activeFilterProposta: '',
+  activeFilterAlinhamento: '',
   activeOrderBy: 'default',
   searchQuery: '',
   selectedCandidateDossier: null,
@@ -28,7 +28,7 @@ const searchInput = document.getElementById('search-input');
 const searchClearBtn = document.getElementById('search-clear-btn');
 const filterCargo = document.getElementById('filter-cargo');
 const filterPartido = document.getElementById('filter-partido');
-const filterProposta = document.getElementById('filter-proposta');
+const filterAlinhamento = document.getElementById('filter-alinhamento');
 const filterOrder = document.getElementById('filter-order');
 const chipsContainer = document.getElementById('chips-container');
 const resultsCount = document.getElementById('results-count');
@@ -62,6 +62,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   await loadStats();
   await loadParties();
+  await loadSpectrums();
   await loadCandidates();
   await loadQuestions();
   await loadGraphData();
@@ -142,6 +143,28 @@ async function loadParties() {
   }
 }
 
+// Political Spectrum Dropdown
+async function loadSpectrums() {
+  if (!filterAlinhamento) return;
+  try {
+    const res = await fetch('/api/spectrums');
+    const spectrums = await res.json();
+    if (!Array.isArray(spectrums) || spectrums.length === 0) return;
+
+    const currentVal = state.activeFilterAlinhamento || '';
+    filterAlinhamento.innerHTML = '<option value="">Todos os Alinhamentos</option>';
+    spectrums.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s.label;
+      opt.textContent = `${s.label} (${s.count})`;
+      if (s.label === currentVal) opt.selected = true;
+      filterAlinhamento.appendChild(opt);
+    });
+  } catch (err) {
+    console.error('Erro ao carregar espectros:', err);
+  }
+}
+
 // Candidates Loading with Debounced Search
 let debounceTimer;
 function setupFilters() {
@@ -173,10 +196,12 @@ function setupFilters() {
     loadCandidates();
   });
 
-  filterProposta.addEventListener('change', (e) => {
-    state.activeFilterProposta = e.target.value;
-    loadCandidates();
-  });
+  if (filterAlinhamento) {
+    filterAlinhamento.addEventListener('change', (e) => {
+      state.activeFilterAlinhamento = e.target.value;
+      loadCandidates();
+    });
+  }
 
   filterOrder.addEventListener('change', (e) => {
     state.activeOrderBy = e.target.value;
@@ -207,7 +232,10 @@ async function loadCandidates() {
   try {
     let url = '/api/candidates?';
     if (state.searchQuery) {
-      url = `/api/search?q=${encodeURIComponent(state.searchQuery)}`;
+      const searchParams = new URLSearchParams();
+      searchParams.append('q', state.searchQuery);
+      if (state.activeFilterAlinhamento) searchParams.append('espectro', state.activeFilterAlinhamento);
+      url = `/api/search?${searchParams.toString()}`;
       const res = await fetch(url);
       const data = await res.json();
       state.candidates = data.candidates || [];
@@ -215,7 +243,7 @@ async function loadCandidates() {
       const params = new URLSearchParams();
       if (state.activeFilterCargo) params.append('cargo', state.activeFilterCargo);
       if (state.activeFilterPartido) params.append('partido', state.activeFilterPartido);
-      if (state.activeFilterProposta) params.append('temProposta', state.activeFilterProposta);
+      if (state.activeFilterAlinhamento) params.append('espectro', state.activeFilterAlinhamento);
       if (state.activeOrderBy !== 'default') params.append('orderBy', state.activeOrderBy);
       params.append('limit', '80');
 
