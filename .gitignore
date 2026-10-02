@@ -17,3 +17,4 @@ list_*.ps1
 inspect_*.ps1
 analyze_*.js
 peek_data.ps1
+scratch/

@@ -1241,14 +1241,14 @@ function drawCompass(userX, userY, hasUser = false) {
 // GRAPHIFY NETWORK VIEW (PARTY & TICKET HIERARCHY STANDARD)
 // =========================================================
 const graphState = {
-  zoom: 1,
+  zoom: 0.72, // Zoom panorâmico inicial padrão Graphify
   panX: 0,
   panY: 0,
   hoveredNodeId: null,
   selectedNodeId: null,
   activePreset: 'macro', // 'macro', 'gdf', 'pres', 'party'
   activeParty: '',
-  layoutMode: 'radial', // 'radial' ou 'linear'
+  layoutMode: 'radial', // 'radial' (Esfera) ou 'linear'
   isDragging: false,
   dragStartX: 0,
   dragStartY: 0,
@@ -1348,7 +1348,7 @@ async function selectPartyInGraph(sigla) {
 
   const layoutToggle = document.getElementById('graph-layout-toggle');
   if (layoutToggle) {
-    layoutToggle.style.display = sigla ? 'flex' : 'none';
+    layoutToggle.style.display = 'flex';
   }
 
   graphState.activeParty = sigla;
@@ -1374,7 +1374,7 @@ function setupGraphControls() {
   canvas.width = 1140;
   canvas.height = 680;
 
-  // Layout mode buttons (Radial vs Linear)
+  // Layout mode buttons (Radial/Esfera vs Linear)
   const btnRadial = document.getElementById('btn-layout-radial');
   const btnLinear = document.getElementById('btn-layout-linear');
   btnRadial?.addEventListener('click', () => {
@@ -1410,7 +1410,7 @@ function setupGraphControls() {
       if (select) select.value = '';
       graphState.activeParty = '';
       const layoutToggle = document.getElementById('graph-layout-toggle');
-      if (layoutToggle) layoutToggle.style.display = 'none';
+      if (layoutToggle) layoutToggle.style.display = 'flex';
 
       await loadGraphData('');
       resetGraphTransform();
@@ -1430,11 +1430,11 @@ function setupGraphControls() {
 
   // Zoom buttons
   document.getElementById('btn-zoom-in')?.addEventListener('click', () => {
-    graphState.zoom = Math.min(graphState.zoom * 1.25, 2.8);
+    graphState.zoom = Math.min(graphState.zoom * 1.25, 3.0);
     renderGraph();
   });
   document.getElementById('btn-zoom-out')?.addEventListener('click', () => {
-    graphState.zoom = Math.max(graphState.zoom / 1.25, 0.45);
+    graphState.zoom = Math.max(graphState.zoom / 1.25, 0.35);
     renderGraph();
   });
   document.getElementById('btn-zoom-reset')?.addEventListener('click', () => {
@@ -1455,7 +1455,7 @@ function setupGraphControls() {
     const mouseY = (e.clientY - rect.top) * scaleY;
 
     const zoomFactor = e.deltaY < 0 ? 1.15 : 0.88;
-    const newZoom = Math.max(0.45, Math.min(2.8, graphState.zoom * zoomFactor));
+    const newZoom = Math.max(0.35, Math.min(3.0, graphState.zoom * zoomFactor));
 
     graphState.panX = mouseX - (mouseX - graphState.panX) * (newZoom / graphState.zoom);
     graphState.panY = mouseY - (mouseY - graphState.panY) * (newZoom / graphState.zoom);
@@ -1544,7 +1544,7 @@ function setupGraphControls() {
 }
 
 function resetGraphTransform() {
-  graphState.zoom = 1;
+  graphState.zoom = 0.72; // Zoom panorâmico inicial padrão Graphify
   graphState.panX = 0;
   graphState.panY = 0;
   graphState.hoveredNodeId = null;
@@ -1599,7 +1599,7 @@ function renderGraph() {
   ctx.clearRect(0, 0, w, h);
 
   const isPartyHierarchy = (state.graphData.mode === 'PARTY_TICKET_HIERARCHY') || Boolean(graphState.activeParty);
-  const isRadial = isPartyHierarchy && (graphState.layoutMode !== 'linear');
+  const isRadial = (graphState.layoutMode !== 'linear');
   const allNodes = state.graphData.nodes || [];
   const allEdges = state.graphData.edges || [];
 
@@ -1641,21 +1641,21 @@ function renderGraph() {
 
     if (isRadial) {
       // =======================================================================
-      // MODE 1A: RADIAL CONSTELLATION (ÓRBITAS DO PODER)
-      // Centro (R=0): Partido
-      // Órbita 1 (R=65): Presidente
-      // Órbita 2 (R=120): Governador + Plano TSE
-      // Órbita 3 (R=175): Senadores
-      // Órbita 4 (R=230): Deputados Federais
-      // Órbita 5 (R=285): Deputados Distritais (CLDF - com alternância anti-colisão)
+      // MODE 1A: RADIAL CONSTELLATION EXPANDIDA (GRAPHIFY STANDARD)
+      // Centro (R=0): Sol da Legenda Partidária
+      // Órbita 1 (R=95): Chapa Presidencial
+      // Órbita 2 (R=165): Chapa Governo do DF + Plano TSE Satélite (R=205)
+      // Órbita 3 (R=240): Senado Federal (DF)
+      // Órbita 4 (R=315/345): Deputados Federais (Leque amplo)
+      // Órbita 5 (R=405/440): Deputados Distritais CLDF (Anti-colisão 360°)
       // =======================================================================
 
-      // 0. Centro: Partido
+      // Centro: Partido
       partyNodes.forEach((p) => {
         positions[p.id] = {
           x: cx,
           y: cy,
-          radius: 26,
+          radius: 28,
           color: '#6366f1',
           node: p,
           tier: 0,
@@ -1664,13 +1664,28 @@ function renderGraph() {
         };
       });
 
-      // 1. Órbita 1: Presidência (Topo central / Noroeste)
+      // Coligações (Órbita Interna de Alianças: R=80px a sudoeste)
+      coalNodes.forEach((cn, idx) => {
+        const angle = Math.PI * 0.65 + idx * 0.6;
+        positions[cn.id] = {
+          x: cx + 80 * Math.cos(angle),
+          y: cy + 80 * Math.sin(angle),
+          radius: 12,
+          color: '#ec4899',
+          node: cn,
+          tier: 0.5,
+          tierLabel: 'COLIGAÇÃO',
+          angle
+        };
+      });
+
+      // 1. Órbita 1: Presidência (R=95px, norte)
       presNodes.forEach((p, idx) => {
         const baseAngle = -Math.PI / 2;
-        const angle = presNodes.length === 1 ? baseAngle : baseAngle - 0.25 + idx * 0.5;
+        const angle = presNodes.length === 1 ? baseAngle : baseAngle - 0.3 + idx * 0.6;
         positions[p.id] = {
-          x: cx + 65 * Math.cos(angle),
-          y: cy + 65 * Math.sin(angle),
+          x: cx + 95 * Math.cos(angle),
+          y: cy + 95 * Math.sin(angle),
           radius: p.metadata?.cargo === 'PRESIDENTE' ? 16 : 13,
           color: '#f59e0b',
           node: p,
@@ -1680,13 +1695,13 @@ function renderGraph() {
         };
       });
 
-      // 2. Órbita 2: Governo do DF (Nordeste / 1h30)
+      // 2. Órbita 2: Governo do DF (R=165px, nordeste)
       govNodes.forEach((g, idx) => {
-        const baseAngle = -Math.PI * 0.25;
-        const angle = govNodes.length === 1 ? baseAngle : baseAngle - 0.2 + idx * 0.4;
+        const baseAngle = -Math.PI * 0.2;
+        const angle = govNodes.length === 1 ? baseAngle : baseAngle - 0.25 + idx * 0.5;
         positions[g.id] = {
-          x: cx + 120 * Math.cos(angle),
-          y: cy + 120 * Math.sin(angle),
+          x: cx + 165 * Math.cos(angle),
+          y: cy + 165 * Math.sin(angle),
           radius: g.metadata?.cargo === 'GOVERNADOR' ? 16 : 13,
           color: '#8b5cf6',
           node: g,
@@ -1696,14 +1711,14 @@ function renderGraph() {
         };
       });
 
-      // Planos de Governo (satélite do governador/presidente)
+      // Planos de Governo TSE (Satélites projetados a 38px para fora)
       propNodes.forEach((pr) => {
         const parent = govNodes[0] || presNodes[0];
         const pPos = parent ? positions[parent.id] : null;
         if (pPos) {
           positions[pr.id] = {
-            x: pPos.x + 28,
-            y: pPos.y - 18,
+            x: pPos.x + 38 * Math.cos(pPos.angle),
+            y: pPos.y + 38 * Math.sin(pPos.angle),
             radius: 9,
             color: '#34d399',
             node: pr,
@@ -1711,27 +1726,16 @@ function renderGraph() {
             tierLabel: 'PLANO TSE',
             angle: pPos.angle
           };
-        } else {
-          positions[pr.id] = {
-            x: cx + 145,
-            y: cy - 90,
-            radius: 9,
-            color: '#34d399',
-            node: pr,
-            tier: 2.5,
-            tierLabel: 'PLANO TSE',
-            angle: 0
-          };
         }
       });
 
-      // 3. Órbita 3: Senado Federal (Noroeste / 10h30)
+      // 3. Órbita 3: Senado Federal (R=240px, noroeste)
       senNodes.forEach((s, idx) => {
-        const baseAngle = -Math.PI * 0.75;
-        const angle = senNodes.length === 1 ? baseAngle : baseAngle - 0.25 + idx * 0.5;
+        const baseAngle = -Math.PI * 0.8;
+        const angle = senNodes.length === 1 ? baseAngle : baseAngle - 0.35 + idx * 0.7;
         positions[s.id] = {
-          x: cx + 175 * Math.cos(angle),
-          y: cy + 175 * Math.sin(angle),
+          x: cx + 240 * Math.cos(angle),
+          y: cy + 240 * Math.sin(angle),
           radius: s.metadata?.cargo === 'SENADOR' ? 15 : 12,
           color: '#3b82f6',
           node: s,
@@ -1741,12 +1745,13 @@ function renderGraph() {
         };
       });
 
-      // 4. Órbita 4: Deputados Federais (Leque amplo na órbita 4)
+      // 4. Órbita 4: Deputados Federais (R=315px e 345px alternados)
       fedNodes.forEach((f, idx) => {
         const angle = -Math.PI + ((idx + 0.5) / Math.max(1, fedNodes.length)) * (Math.PI * 2);
+        const rFed = (idx % 2 === 0) ? 315 : 345;
         positions[f.id] = {
-          x: cx + 230 * Math.cos(angle),
-          y: cy + 230 * Math.sin(angle),
+          x: cx + rFed * Math.cos(angle),
+          y: cy + rFed * Math.sin(angle),
           radius: 12,
           color: '#06b6d4',
           node: f,
@@ -1756,10 +1761,10 @@ function renderGraph() {
         };
       });
 
-      // 5. Órbita 5: Deputados Distritais (CLDF - Órbita Externa com alternância de raio)
+      // 5. Órbita 5: Deputados Distritais CLDF (R=405px e 440px alternados)
       distNodes.forEach((d, idx) => {
         const angle = -Math.PI / 2 + (idx / Math.max(1, distNodes.length)) * (Math.PI * 2);
-        const rDist = (idx % 2 === 0) ? 275 : 295;
+        const rDist = (idx % 2 === 0) ? 405 : 440;
         positions[d.id] = {
           x: cx + rDist * Math.cos(angle),
           y: cy + rDist * Math.sin(angle),
@@ -1772,35 +1777,9 @@ function renderGraph() {
         };
       });
 
-      // Coligações
-      coalNodes.forEach((cn, idx) => {
-        const angle = Math.PI * 0.75 + idx * 0.3;
-        positions[cn.id] = {
-          x: cx + 130 * Math.cos(angle),
-          y: cy + 130 * Math.sin(angle),
-          radius: 11,
-          color: '#ec4899',
-          node: cn,
-          tier: 0.5,
-          tierLabel: 'COLIGAÇÃO',
-          angle
-        };
-      });
-
     } else {
-      // =======================================================================
-      // MODE 1B: LINEAR CASCADING TREE (CORRIGIDA)
-      // 6 Colunas organizadas com espaçamento fluido
-      // =======================================================================
-      const colX = {
-        party: 90,
-        pres: 260,
-        gov: 440,
-        sen: 620,
-        fed: 800,
-        distA: 960,
-        distB: 1040
-      };
+      // MODE 1B: LINEAR CASCADING TREE (FALLBACK)
+      const colX = { party: 90, pres: 260, gov: 440, sen: 620, fed: 800, distA: 960, distB: 1040 };
 
       partyNodes.forEach((p, idx) => {
         positions[p.id] = {
@@ -1898,71 +1877,150 @@ function renderGraph() {
 
   } else {
     // =========================================================================
-    // MODE 2: MACRO_EXECUTIVE_GRAPH (Partidos -> Presidente -> Governador)
-    // 3-Column Left-to-Right Cascading Flow: Zero hairball, maximum clarity
+    // MODE 2: MACRO GRAPH
+    // Radial/Esfera 360° como padrão soberano (Graphify Standard)
     // =========================================================================
     const partyNodes = nodes.filter(n => n.type === 'PARTY');
     const presNodes = nodes.filter(n => n.type === 'CANDIDATE' && (n.metadata?.cargo === 'PRESIDENTE' || n.metadata?.cargo === 'VICE-PRESIDENTE'));
     const govNodes = nodes.filter(n => n.type === 'CANDIDATE' && (n.metadata?.cargo === 'GOVERNADOR' || n.metadata?.cargo === 'VICE-GOVERNADOR'));
     const propNodes = nodes.filter(n => n.type === 'GOVERNMENT_PLAN');
 
-    // Col 1: Partidos Políticos (Escalonado em 2 colunas para espaçamento perfeito)
-    const pColA = partyNodes.filter((_, i) => i % 2 === 0);
-    const pColB = partyNodes.filter((_, i) => i % 2 !== 0);
-    distributeInColumn(pColA, 110, cy, 550, positions, () => ({
-      radius: 12,
-      color: '#6366f1',
-      tier: 0,
-      tierLabel: 'PARTIDO'
-    }));
-    distributeInColumn(pColB, 230, cy + 18, 550, positions, () => ({
-      radius: 12,
-      color: '#6366f1',
-      tier: 0,
-      tierLabel: 'PARTIDO'
-    }));
+    if (isRadial) {
+      // 0. Centro Solar: Núcleo do Sistema Eleitoral 2026
+      positions['core:radar2026'] = {
+        x: cx,
+        y: cy,
+        radius: 30,
+        color: '#38bdf8',
+        node: { id: 'core:radar2026', label: 'RADAR 2026', type: 'CORE' },
+        tier: 0,
+        tierLabel: 'CENTRO DO SISTEMA',
+        angle: 0
+      };
 
-    // Col 2: Presidenciáveis 2026 (Escalonado em 2 colunas)
-    const presColA = presNodes.filter((_, i) => i % 2 === 0);
-    const presColB = presNodes.filter((_, i) => i % 2 !== 0);
-    distributeInColumn(presColA, 500, cy, 550, positions, (node) => ({
-      radius: node.metadata?.cargo === 'PRESIDENTE' ? 16 : 13,
-      color: '#f59e0b',
-      tier: 1,
-      tierLabel: 'PRESIDENTE'
-    }));
-    distributeInColumn(presColB, 630, cy + 20, 550, positions, (node) => ({
-      radius: node.metadata?.cargo === 'PRESIDENTE' ? 16 : 13,
-      color: '#f59e0b',
-      tier: 1,
-      tierLabel: 'PRESIDENTE'
-    }));
-
-    // Col 3: Governadores GDF 2026 (Coluna da Direita)
-    distributeInColumn(govNodes, 940, cy, 540, positions, (node) => ({
-      radius: node.metadata?.cargo === 'GOVERNADOR' ? 16 : 13,
-      color: '#8b5cf6',
-      tier: 2,
-      tierLabel: 'GOVERNADOR'
-    }));
-
-    // Planos de Governo
-    propNodes.forEach((pn) => {
-      const parent = govNodes.find(g => pn.id.includes(g.metadata?.sq_candidato || '###')) ||
-                     presNodes.find(p => pn.id.includes(p.metadata?.sq_candidato || '###'));
-      if (parent && positions[parent.id]) {
-        const pPos = positions[parent.id];
-        positions[pn.id] = {
-          x: pPos.x + 32,
-          y: pPos.y - 20,
-          radius: 9,
-          color: '#34d399',
-          node: pn,
-          tier: 2.5,
-          tierLabel: 'PLANO TSE'
+      // 1. Órbita 1: Partidos Políticos (Sub-órbitas R=125 e R=175 para anti-colisão perfeita)
+      partyNodes.forEach((p, idx) => {
+        const angle = (idx / Math.max(1, partyNodes.length)) * (Math.PI * 2) - Math.PI / 2;
+        const rParty = (idx % 2 === 0) ? 125 : 175;
+        positions[p.id] = {
+          x: cx + rParty * Math.cos(angle),
+          y: cy + rParty * Math.sin(angle),
+          radius: 13,
+          color: '#6366f1',
+          node: p,
+          tier: 1,
+          tierLabel: 'PARTIDO',
+          angle
         };
-      }
-    });
+      });
+
+      // 2. Órbita 2: Presidenciáveis 2026 (Sub-órbitas R=240 e R=285)
+      presNodes.forEach((pr, idx) => {
+        const angle = (idx / Math.max(1, presNodes.length)) * (Math.PI * 2) - Math.PI / 3;
+        const rPres = (idx % 2 === 0) ? 240 : 285;
+        positions[pr.id] = {
+          x: cx + rPres * Math.cos(angle),
+          y: cy + rPres * Math.sin(angle),
+          radius: pr.metadata?.cargo === 'PRESIDENTE' ? 15 : 12,
+          color: '#f59e0b',
+          node: pr,
+          tier: 2,
+          tierLabel: 'PRESIDENTE',
+          angle
+        };
+      });
+
+      // 3. Órbita 3: Disputa Governo do DF 2026 (Sub-órbitas R=345 e R=390)
+      govNodes.forEach((g, idx) => {
+        const angle = (idx / Math.max(1, govNodes.length)) * (Math.PI * 2) - Math.PI / 4;
+        const rGov = (idx % 2 === 0) ? 345 : 390;
+        positions[g.id] = {
+          x: cx + rGov * Math.cos(angle),
+          y: cy + rGov * Math.sin(angle),
+          radius: g.metadata?.cargo === 'GOVERNADOR' ? 15 : 12,
+          color: '#8b5cf6',
+          node: g,
+          tier: 3,
+          tierLabel: 'GOVERNADOR',
+          angle
+        };
+      });
+
+      // Planos de Governo TSE (Satélites projetados a 38px)
+      propNodes.forEach((pn) => {
+        const parent = govNodes.find(g => pn.id.includes(g.metadata?.sq_candidato || '###')) ||
+                       presNodes.find(p => pn.id.includes(p.metadata?.sq_candidato || '###'));
+        if (parent && positions[parent.id]) {
+          const pPos = positions[parent.id];
+          positions[pn.id] = {
+            x: pPos.x + 38 * Math.cos(pPos.angle),
+            y: pPos.y + 38 * Math.sin(pPos.angle),
+            radius: 9,
+            color: '#34d399',
+            node: pn,
+            tier: pPos.tier + 0.5,
+            tierLabel: 'PLANO TSE',
+            angle: pPos.angle
+          };
+        }
+      });
+
+    } else {
+      // MODO LINEAR MACRO (FALLBACK EM COLUNAS)
+      const pColA = partyNodes.filter((_, i) => i % 2 === 0);
+      const pColB = partyNodes.filter((_, i) => i % 2 !== 0);
+      distributeInColumn(pColA, 110, cy, 550, positions, () => ({
+        radius: 12,
+        color: '#6366f1',
+        tier: 0,
+        tierLabel: 'PARTIDO'
+      }));
+      distributeInColumn(pColB, 230, cy + 18, 550, positions, () => ({
+        radius: 12,
+        color: '#6366f1',
+        tier: 0,
+        tierLabel: 'PARTIDO'
+      }));
+
+      const presColA = presNodes.filter((_, i) => i % 2 === 0);
+      const presColB = presNodes.filter((_, i) => i % 2 !== 0);
+      distributeInColumn(presColA, 500, cy, 550, positions, (node) => ({
+        radius: node.metadata?.cargo === 'PRESIDENTE' ? 16 : 13,
+        color: '#f59e0b',
+        tier: 1,
+        tierLabel: 'PRESIDENTE'
+      }));
+      distributeInColumn(presColB, 630, cy + 20, 550, positions, (node) => ({
+        radius: node.metadata?.cargo === 'PRESIDENTE' ? 16 : 13,
+        color: '#f59e0b',
+        tier: 1,
+        tierLabel: 'PRESIDENTE'
+      }));
+
+      distributeInColumn(govNodes, 940, cy, 540, positions, (node) => ({
+        radius: node.metadata?.cargo === 'GOVERNADOR' ? 16 : 13,
+        color: '#8b5cf6',
+        tier: 2,
+        tierLabel: 'GOVERNADOR'
+      }));
+
+      propNodes.forEach((pn) => {
+        const parent = govNodes.find(g => pn.id.includes(g.metadata?.sq_candidato || '###')) ||
+                       presNodes.find(p => pn.id.includes(p.metadata?.sq_candidato || '###'));
+        if (parent && positions[parent.id]) {
+          const pPos = positions[parent.id];
+          positions[pn.id] = {
+            x: pPos.x + 32,
+            y: pPos.y - 20,
+            radius: 9,
+            color: '#34d399',
+            node: pn,
+            tier: 2.5,
+            tierLabel: 'PLANO TSE'
+          };
+        }
+      });
+    }
   }
 
   graphState.positions = positions;
@@ -1994,37 +2052,40 @@ function renderGraph() {
 
   // Background subtle starfield / grid
   ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
-  for (let gx = -300; gx < w + 500; gx += 80) {
-    for (let gy = -300; gy < h + 500; gy += 80) {
+  for (let gx = -400; gx < w + 600; gx += 80) {
+    for (let gy = -400; gy < h + 600; gy += 80) {
       ctx.beginPath();
       ctx.arc(gx, gy, 1, 0, Math.PI * 2);
       ctx.fill();
     }
   }
 
-  // Background Orbit Guides (Radial) OR Column Dividers (Linear/Macro)
+  // Background Orbit Guides (Radial/Esfera) OR Column Dividers (Linear)
   if (isRadial) {
-    const orbits = [
-      { r: 65, label: 'Órbita 1: Executivo Nacional' },
-      { r: 120, label: 'Órbita 2: Executivo DF' },
-      { r: 175, label: 'Órbita 3: Senado Federal' },
-      { r: 230, label: 'Órbita 4: Câmara Federal' },
-      { r: 285, label: 'Órbita 5: CLDF' }
+    const orbits = isPartyHierarchy ? [
+      { r: 95, label: 'Órbita 1: Executivo Nacional' },
+      { r: 165, label: 'Órbita 2: Executivo DF' },
+      { r: 240, label: 'Órbita 3: Senado Federal' },
+      { r: 330, label: 'Órbita 4: Câmara dos Deputados' },
+      { r: 425, label: 'Órbita 5: CLDF' }
+    ] : [
+      { r: 150, label: 'Órbita 1: Legendas Partidárias' },
+      { r: 260, label: 'Órbita 2: Presidenciáveis 2026' },
+      { r: 365, label: 'Órbita 3: Disputa Governo do DF' }
     ];
 
     ctx.setLineDash([3, 7]);
     ctx.lineWidth = 1;
     orbits.forEach(orb => {
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.06)';
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
       ctx.beginPath();
       ctx.arc(cx, cy, orb.r, 0, Math.PI * 2);
       ctx.stroke();
 
-      // Rótulo sutil da órbita no topo
       ctx.font = '700 9px Plus Jakarta Sans, sans-serif';
-      ctx.fillStyle = 'rgba(148, 163, 184, 0.35)';
+      ctx.fillStyle = 'rgba(148, 163, 184, 0.4)';
       ctx.textAlign = 'center';
-      ctx.fillText(orb.label, cx, cy - orb.r - 4);
+      ctx.fillText(orb.label, cx, cy - orb.r - 5);
     });
     ctx.setLineDash([]);
   } else if (isPartyHierarchy) {
@@ -2116,23 +2177,21 @@ function renderGraph() {
       ctx.shadowColor = 'rgba(56, 189, 248, 0.8)';
       ctx.shadowBlur = 12;
     } else if (hasFocus) {
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
-      ctx.lineWidth = 1;
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+      ctx.lineWidth = 0.8;
       ctx.shadowBlur = 0;
     } else {
-      ctx.strokeStyle = isPartyHierarchy ? 'rgba(99, 102, 241, 0.22)' : 'rgba(255, 255, 255, 0.14)';
+      ctx.strokeStyle = isRadial ? 'rgba(56, 189, 248, 0.18)' : 'rgba(99, 102, 241, 0.22)';
       ctx.lineWidth = 1.2;
       ctx.shadowBlur = 0;
     }
 
     ctx.beginPath();
-
     if (isRadial) {
-      // RADIAL: Feixe direto e limpo do pai para o filho (sem curvas ou laços invertidos)
+      // Vetor direto limpo do centro para fora
       ctx.moveTo(p1.x, p1.y);
       ctx.lineTo(p2.x, p2.y);
-    } else if (isPartyHierarchy) {
-      // LINEAR: Curva de Bézier normalizada da esquerda para a direita (sempre pStart.x <= pEnd.x)
+    } else {
       const pStart = p1.x <= p2.x ? p1 : p2;
       const pEnd = p1.x <= p2.x ? p2 : p1;
       const dx = pEnd.x - pStart.x;
@@ -2142,10 +2201,6 @@ function renderGraph() {
         pEnd.x - dx * 0.45, pEnd.y,
         pEnd.x, pEnd.y
       );
-    } else {
-      // MACRO: Linha reta límpida
-      ctx.moveTo(p1.x, p1.y);
-      ctx.lineTo(p2.x, p2.y);
     }
 
     ctx.stroke();
@@ -2180,13 +2235,13 @@ function renderGraph() {
     const isNodeActive = !activeId || connectedIds.has(p.node.id);
     const isDirectHover = p.node.id === activeId;
 
-    ctx.globalAlpha = isNodeActive ? 1.0 : 0.15;
+    ctx.globalAlpha = isNodeActive ? 1.0 : 0.12;
 
-    // Aura ring for hovered or party center
-    if (isDirectHover || (isPartyHierarchy && p.node.type === 'PARTY')) {
+    // Aura ring for hovered or core/party center
+    if (isDirectHover || (isRadial && (p.node.type === 'CORE' || (isPartyHierarchy && p.node.type === 'PARTY')))) {
       ctx.beginPath();
-      ctx.arc(p.x, p.y, p.radius + 8, 0, Math.PI * 2);
-      ctx.fillStyle = (p.node.type === 'PARTY') ? 'rgba(99, 102, 241, 0.28)' : 'rgba(56, 189, 248, 0.3)';
+      ctx.arc(p.x, p.y, p.radius + 10, 0, Math.PI * 2);
+      ctx.fillStyle = (p.node.type === 'CORE' || p.node.type === 'PARTY') ? 'rgba(56, 189, 248, 0.25)' : 'rgba(56, 189, 248, 0.35)';
       ctx.fill();
     }
 
@@ -2195,7 +2250,7 @@ function renderGraph() {
     ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
     ctx.fillStyle = p.color;
     ctx.fill();
-    ctx.strokeStyle = isDirectHover ? '#fff' : 'rgba(255, 255, 255, 0.75)';
+    ctx.strokeStyle = isDirectHover ? '#fff' : 'rgba(255, 255, 255, 0.8)';
     ctx.lineWidth = isDirectHover ? 2.5 : 1.5;
     ctx.stroke();
 
@@ -2210,14 +2265,14 @@ function renderGraph() {
     const textW = ctx.measureText(cleanLabel).width;
 
     if (isRadial) {
-      // Posicionamento inteligente no modo Radial (evita colisões e sobreposições)
-      if (p.node.type === 'PARTY') {
+      if (p.tier === 0) {
+        // Centro (Sol da Esfera): Rótulo centralizado logo abaixo
         const labelY = p.y + p.radius + 14;
         ctx.fillStyle = 'rgba(9, 12, 20, 0.9)';
         ctx.beginPath();
         ctx.roundRect(p.x - textW / 2 - 6, labelY - 8, textW + 12, 16, 4);
         ctx.fill();
-        ctx.strokeStyle = isDirectHover ? '#38bdf8' : 'rgba(255, 255, 255, 0.18)';
+        ctx.strokeStyle = isDirectHover ? '#38bdf8' : 'rgba(255, 255, 255, 0.25)';
         ctx.lineWidth = 1;
         ctx.stroke();
 
@@ -2226,6 +2281,7 @@ function renderGraph() {
         ctx.textBaseline = 'middle';
         ctx.fillText(cleanLabel, p.x, labelY);
       } else {
+        // Órbitas: Rótulo inteligente projetado para o lado exterior
         const cosA = Math.cos(p.angle ?? Math.atan2(p.y - cy, p.x - cx));
         const isRight = cosA >= 0;
         const labelX = isRight ? (p.x + p.radius + 6) : (p.x - p.radius - 6);
@@ -2245,7 +2301,6 @@ function renderGraph() {
         ctx.fillText(cleanLabel, isRight ? labelX + 2 : labelX - 2, p.y);
       }
     } else {
-      // Posicionamento padrão no modo Linear e Macro (Abaixo do nó)
       const labelY = p.y + p.radius + 12;
       ctx.fillStyle = 'rgba(9, 12, 20, 0.88)';
       ctx.beginPath();
@@ -2297,6 +2352,9 @@ function showGraphNodeDetails(node) {
   } else if (node.type === 'COALITION') {
     typeBadgeClass = 'badge-party';
     typeLabel = 'Coligação Partidária';
+  } else if (node.type === 'CORE') {
+    typeBadgeClass = 'badge-party';
+    typeLabel = 'Núcleo Central';
   }
 
   const allEdges = state.graphData?.edges || [];
@@ -2414,6 +2472,26 @@ function showGraphNodeDetails(node) {
           <div class="insp-stat-val" style="color: #ec4899;">${escapeHtml(meta.partidos || node.label)}</div>
         </div>
       </div>
+    `;
+  } else if (node.type === 'CORE') {
+    statsHtml = `
+      <div class="insp-stats-grid">
+        <div class="insp-stat-item" style="grid-column: span 2;">
+          <div class="insp-stat-label">Epicentro do Sistema</div>
+          <div class="insp-stat-val" style="color: #38bdf8;">Eleições Brasil & DF 2026</div>
+        </div>
+        <div class="insp-stat-item">
+          <div class="insp-stat-label">Legendas Monitoradas</div>
+          <div class="insp-stat-val" style="color: #6366f1;">26+ Partidos</div>
+        </div>
+        <div class="insp-stat-item">
+          <div class="insp-stat-label">Candidaturas Oficiais</div>
+          <div class="insp-stat-val" style="color: #f59e0b;">Executivo & Legislativo</div>
+        </div>
+      </div>
+      <p style="font-size: 12px; color: var(--text-muted); line-height: 1.5; margin-top: 8px;">
+        Constelação esférica orbital integrando dados abertos do TSE, patrimônios, certidões criminais e planos de governo. Clique em qualquer legenda para explorar toda a árvore de candidaturas.
+      </p>
     `;
   }
 
