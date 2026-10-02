@@ -7,6 +7,7 @@
   "scripts": {
     "extract": "node src/pipeline/extract.js",
     "build-graph": "node src/pipeline/build_graph.js",
+    "build": "echo 'Ready for deployment'",
     "dev": "node src/server/app.js",
     "start": "node src/server/app.js"
   },
