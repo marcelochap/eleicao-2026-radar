@@ -1430,11 +1430,13 @@ function setupGraphControls() {
 
   // Zoom buttons
   document.getElementById('btn-zoom-in')?.addEventListener('click', () => {
-    graphState.zoom = Math.min(graphState.zoom * 1.25, 2.8);
+    graphState.zoom = Math.min(graphState.zoom * 1.2, 3.2);
+    updateZoomDisplay();
     renderGraph();
   });
   document.getElementById('btn-zoom-out')?.addEventListener('click', () => {
-    graphState.zoom = Math.max(graphState.zoom / 1.25, 0.45);
+    graphState.zoom = Math.max(graphState.zoom / 1.2, 0.35);
+    updateZoomDisplay();
     renderGraph();
   });
   document.getElementById('btn-zoom-reset')?.addEventListener('click', () => {
@@ -1455,12 +1457,13 @@ function setupGraphControls() {
     const mouseY = (e.clientY - rect.top) * scaleY;
 
     const zoomFactor = e.deltaY < 0 ? 1.15 : 0.88;
-    const newZoom = Math.max(0.45, Math.min(2.8, graphState.zoom * zoomFactor));
+    const newZoom = Math.max(0.35, Math.min(3.2, graphState.zoom * zoomFactor));
 
     graphState.panX = mouseX - (mouseX - graphState.panX) * (newZoom / graphState.zoom);
     graphState.panY = mouseY - (mouseY - graphState.panY) * (newZoom / graphState.zoom);
     graphState.zoom = newZoom;
 
+    updateZoomDisplay();
     renderGraph();
   }, { passive: false });
 
@@ -1543,11 +1546,40 @@ function setupGraphControls() {
   });
 }
 
+function updateZoomDisplay() {
+  const btn = document.getElementById('btn-zoom-reset');
+  if (btn) {
+    btn.textContent = `${Math.round(graphState.zoom * 100)}%`;
+  }
+}
+
 function resetGraphTransform() {
-  graphState.zoom = 1;
-  graphState.panX = 0;
-  graphState.panY = 0;
+  const canvas = document.getElementById('networkCanvas');
+  const cx = canvas ? canvas.width / 2 : 570;
+  const cy = canvas ? canvas.height / 2 : 340;
+
+  const isParty = Boolean(graphState.activeParty);
+  const isRadial = isParty && (graphState.layoutMode !== 'linear');
+
+  if (isRadial) {
+    // Zoom mais afastado para ver toda a constelação espaçada
+    graphState.zoom = 0.58;
+    graphState.panX = cx * (1 - graphState.zoom);
+    graphState.panY = cy * (1 - graphState.zoom);
+  } else if (isParty) {
+    // Árvore linear de 6 colunas espaçadas
+    graphState.zoom = 0.68;
+    graphState.panX = 30;
+    graphState.panY = cy * (1 - graphState.zoom);
+  } else {
+    // Visão macro executiva geral
+    graphState.zoom = 0.88;
+    graphState.panX = cx * (1 - graphState.zoom);
+    graphState.panY = cy * (1 - graphState.zoom);
+  }
+
   graphState.hoveredNodeId = null;
+  updateZoomDisplay();
 }
 
 function resetInspectorPanel() {
@@ -1641,13 +1673,13 @@ function renderGraph() {
 
     if (isRadial) {
       // =======================================================================
-      // MODE 1A: RADIAL CONSTELLATION (ÓRBITAS DO PODER)
+      // MODE 1A: RADIAL CONSTELLATION (ÓRBITAS DO PODER AMPLIADAS)
       // Centro (R=0): Partido
-      // Órbita 1 (R=65): Presidente
-      // Órbita 2 (R=120): Governador + Plano TSE
-      // Órbita 3 (R=175): Senadores
-      // Órbita 4 (R=230): Deputados Federais
-      // Órbita 5 (R=285): Deputados Distritais (CLDF - com alternância anti-colisão)
+      // Órbita 1 (R=95): Presidente
+      // Órbita 2 (R=190): Governador + Plano TSE (R=230)
+      // Órbita 3 (R=290): Senadores
+      // Órbita 4 (R=400): Deputados Federais
+      // Órbita 5 (R=520-560): Deputados Distritais (CLDF - amplo espaçamento)
       // =======================================================================
 
       // 0. Centro: Partido
@@ -1655,7 +1687,7 @@ function renderGraph() {
         positions[p.id] = {
           x: cx,
           y: cy,
-          radius: 26,
+          radius: 28,
           color: '#6366f1',
           node: p,
           tier: 0,
@@ -1667,11 +1699,11 @@ function renderGraph() {
       // 1. Órbita 1: Presidência (Topo central / Noroeste)
       presNodes.forEach((p, idx) => {
         const baseAngle = -Math.PI / 2;
-        const angle = presNodes.length === 1 ? baseAngle : baseAngle - 0.25 + idx * 0.5;
+        const angle = presNodes.length === 1 ? baseAngle : baseAngle - 0.28 + idx * 0.56;
         positions[p.id] = {
-          x: cx + 65 * Math.cos(angle),
-          y: cy + 65 * Math.sin(angle),
-          radius: p.metadata?.cargo === 'PRESIDENTE' ? 16 : 13,
+          x: cx + 95 * Math.cos(angle),
+          y: cy + 95 * Math.sin(angle),
+          radius: p.metadata?.cargo === 'PRESIDENTE' ? 17 : 14,
           color: '#f59e0b',
           node: p,
           tier: 1,
@@ -1683,11 +1715,11 @@ function renderGraph() {
       // 2. Órbita 2: Governo do DF (Nordeste / 1h30)
       govNodes.forEach((g, idx) => {
         const baseAngle = -Math.PI * 0.25;
-        const angle = govNodes.length === 1 ? baseAngle : baseAngle - 0.2 + idx * 0.4;
+        const angle = govNodes.length === 1 ? baseAngle : baseAngle - 0.22 + idx * 0.44;
         positions[g.id] = {
-          x: cx + 120 * Math.cos(angle),
-          y: cy + 120 * Math.sin(angle),
-          radius: g.metadata?.cargo === 'GOVERNADOR' ? 16 : 13,
+          x: cx + 190 * Math.cos(angle),
+          y: cy + 190 * Math.sin(angle),
+          radius: g.metadata?.cargo === 'GOVERNADOR' ? 17 : 14,
           color: '#8b5cf6',
           node: g,
           tier: 2,
@@ -1702,9 +1734,9 @@ function renderGraph() {
         const pPos = parent ? positions[parent.id] : null;
         if (pPos) {
           positions[pr.id] = {
-            x: pPos.x + 28,
-            y: pPos.y - 18,
-            radius: 9,
+            x: pPos.x + 36,
+            y: pPos.y - 24,
+            radius: 10,
             color: '#34d399',
             node: pr,
             tier: 2.5,
@@ -1713,9 +1745,9 @@ function renderGraph() {
           };
         } else {
           positions[pr.id] = {
-            x: cx + 145,
-            y: cy - 90,
-            radius: 9,
+            x: cx + 225,
+            y: cy - 130,
+            radius: 10,
             color: '#34d399',
             node: pr,
             tier: 2.5,
@@ -1728,11 +1760,11 @@ function renderGraph() {
       // 3. Órbita 3: Senado Federal (Noroeste / 10h30)
       senNodes.forEach((s, idx) => {
         const baseAngle = -Math.PI * 0.75;
-        const angle = senNodes.length === 1 ? baseAngle : baseAngle - 0.25 + idx * 0.5;
+        const angle = senNodes.length === 1 ? baseAngle : baseAngle - 0.26 + idx * 0.52;
         positions[s.id] = {
-          x: cx + 175 * Math.cos(angle),
-          y: cy + 175 * Math.sin(angle),
-          radius: s.metadata?.cargo === 'SENADOR' ? 15 : 12,
+          x: cx + 290 * Math.cos(angle),
+          y: cy + 290 * Math.sin(angle),
+          radius: s.metadata?.cargo === 'SENADOR' ? 16 : 13,
           color: '#3b82f6',
           node: s,
           tier: 3,
@@ -1745,9 +1777,9 @@ function renderGraph() {
       fedNodes.forEach((f, idx) => {
         const angle = -Math.PI + ((idx + 0.5) / Math.max(1, fedNodes.length)) * (Math.PI * 2);
         positions[f.id] = {
-          x: cx + 230 * Math.cos(angle),
-          y: cy + 230 * Math.sin(angle),
-          radius: 12,
+          x: cx + 400 * Math.cos(angle),
+          y: cy + 400 * Math.sin(angle),
+          radius: 13,
           color: '#06b6d4',
           node: f,
           tier: 4,
@@ -1759,11 +1791,11 @@ function renderGraph() {
       // 5. Órbita 5: Deputados Distritais (CLDF - Órbita Externa com alternância de raio)
       distNodes.forEach((d, idx) => {
         const angle = -Math.PI / 2 + (idx / Math.max(1, distNodes.length)) * (Math.PI * 2);
-        const rDist = (idx % 2 === 0) ? 275 : 295;
+        const rDist = (idx % 2 === 0) ? 520 : 560;
         positions[d.id] = {
           x: cx + rDist * Math.cos(angle),
           y: cy + rDist * Math.sin(angle),
-          radius: 10,
+          radius: 11,
           color: '#10b981',
           node: d,
           tier: 5,
@@ -1774,11 +1806,11 @@ function renderGraph() {
 
       // Coligações
       coalNodes.forEach((cn, idx) => {
-        const angle = Math.PI * 0.75 + idx * 0.3;
+        const angle = Math.PI * 0.75 + idx * 0.35;
         positions[cn.id] = {
-          x: cx + 130 * Math.cos(angle),
-          y: cy + 130 * Math.sin(angle),
-          radius: 11,
+          x: cx + 210 * Math.cos(angle),
+          y: cy + 210 * Math.sin(angle),
+          radius: 12,
           color: '#ec4899',
           node: cn,
           tier: 0.5,
@@ -1789,24 +1821,24 @@ function renderGraph() {
 
     } else {
       // =======================================================================
-      // MODE 1B: LINEAR CASCADING TREE (CORRIGIDA)
-      // 6 Colunas organizadas com espaçamento fluido
+      // MODE 1B: LINEAR CASCADING TREE (CORRIGIDA E ESPAÇADA)
+      // 6 Colunas organizadas com espaçamento ampliado
       // =======================================================================
       const colX = {
-        party: 90,
-        pres: 260,
-        gov: 440,
-        sen: 620,
-        fed: 800,
-        distA: 960,
-        distB: 1040
+        party: 100,
+        pres: 300,
+        gov: 520,
+        sen: 740,
+        fed: 980,
+        distA: 1220,
+        distB: 1350
       };
 
       partyNodes.forEach((p, idx) => {
         positions[p.id] = {
           x: colX.party,
-          y: cy + (idx - (partyNodes.length - 1) / 2) * 90,
-          radius: 22,
+          y: cy + (idx - (partyNodes.length - 1) / 2) * 100,
+          radius: 24,
           color: '#6366f1',
           node: p,
           tier: 0,
@@ -1814,29 +1846,29 @@ function renderGraph() {
         };
       });
 
-      distributeInColumn(presNodes, colX.pres, cy, 340, positions, (node) => ({
-        radius: node.metadata?.cargo === 'PRESIDENTE' ? 16 : 13,
+      distributeInColumn(presNodes, colX.pres, cy, 380, positions, (node) => ({
+        radius: node.metadata?.cargo === 'PRESIDENTE' ? 17 : 14,
         color: '#f59e0b',
         tier: 1,
         tierLabel: 'PRESIDENTE'
       }));
 
-      distributeInColumn(govNodes, colX.gov, cy, 360, positions, (node) => ({
-        radius: node.metadata?.cargo === 'GOVERNADOR' ? 16 : 13,
+      distributeInColumn(govNodes, colX.gov, cy, 400, positions, (node) => ({
+        radius: node.metadata?.cargo === 'GOVERNADOR' ? 17 : 14,
         color: '#8b5cf6',
         tier: 2,
         tierLabel: 'GOVERNADOR'
       }));
 
-      distributeInColumn(senNodes, colX.sen, cy, 440, positions, (node) => ({
-        radius: node.metadata?.cargo === 'SENADOR' ? 15 : 11,
+      distributeInColumn(senNodes, colX.sen, cy, 480, positions, (node) => ({
+        radius: node.metadata?.cargo === 'SENADOR' ? 16 : 12,
         color: '#3b82f6',
         tier: 3,
         tierLabel: 'SENADOR'
       }));
 
-      distributeInColumn(fedNodes, colX.fed, cy, 520, positions, () => ({
-        radius: 12,
+      distributeInColumn(fedNodes, colX.fed, cy, 560, positions, () => ({
+        radius: 13,
         color: '#06b6d4',
         tier: 4,
         tierLabel: 'DEP. FEDERAL'
@@ -1844,14 +1876,14 @@ function renderGraph() {
 
       const distA = distNodes.filter((_, i) => i % 2 === 0);
       const distB = distNodes.filter((_, i) => i % 2 !== 0);
-      distributeInColumn(distA, colX.distA, cy, 540, positions, () => ({
-        radius: 10,
+      distributeInColumn(distA, colX.distA, cy, 580, positions, () => ({
+        radius: 11,
         color: '#10b981',
         tier: 5,
         tierLabel: 'DEP. DISTRITAL'
       }));
-      distributeInColumn(distB, colX.distB, cy + 18, 540, positions, () => ({
-        radius: 10,
+      distributeInColumn(distB, colX.distB, cy + 20, 580, positions, () => ({
+        radius: 11,
         color: '#10b981',
         tier: 5,
         tierLabel: 'DEP. DISTRITAL'
@@ -1863,9 +1895,9 @@ function renderGraph() {
         if (parentGov && positions[parentGov.id]) {
           const pPos = positions[parentGov.id];
           positions[pr.id] = {
-            x: pPos.x + 38,
-            y: pPos.y - 28,
-            radius: 9,
+            x: pPos.x + 40,
+            y: pPos.y - 30,
+            radius: 10,
             color: '#34d399',
             node: pr,
             tier: pPos.tier + 0.5,
@@ -1873,9 +1905,9 @@ function renderGraph() {
           };
         } else {
           positions[pr.id] = {
-            x: colX.gov + 45,
-            y: 70 + i * 35,
-            radius: 9,
+            x: colX.gov + 50,
+            y: 70 + i * 38,
+            radius: 10,
             color: '#34d399',
             node: pr,
             tier: 2.5
@@ -1885,9 +1917,9 @@ function renderGraph() {
 
       coalNodes.forEach((cn, i) => {
         positions[cn.id] = {
-          x: colX.party + 70,
-          y: cy + 150 + i * 50,
-          radius: 11,
+          x: colX.party + 80,
+          y: cy + 160 + i * 55,
+          radius: 12,
           color: '#ec4899',
           node: cn,
           tier: 0.5,
@@ -1994,8 +2026,8 @@ function renderGraph() {
 
   // Background subtle starfield / grid
   ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
-  for (let gx = -300; gx < w + 500; gx += 80) {
-    for (let gy = -300; gy < h + 500; gy += 80) {
+  for (let gx = -400; gx < w + 800; gx += 80) {
+    for (let gy = -400; gy < h + 800; gy += 80) {
       ctx.beginPath();
       ctx.arc(gx, gy, 1, 0, Math.PI * 2);
       ctx.fill();
@@ -2005,11 +2037,11 @@ function renderGraph() {
   // Background Orbit Guides (Radial) OR Column Dividers (Linear/Macro)
   if (isRadial) {
     const orbits = [
-      { r: 65, label: 'Órbita 1: Executivo Nacional' },
-      { r: 120, label: 'Órbita 2: Executivo DF' },
-      { r: 175, label: 'Órbita 3: Senado Federal' },
-      { r: 230, label: 'Órbita 4: Câmara Federal' },
-      { r: 285, label: 'Órbita 5: CLDF' }
+      { r: 95, label: 'Órbita 1: Executivo Nacional' },
+      { r: 190, label: 'Órbita 2: Executivo GDF' },
+      { r: 290, label: 'Órbita 3: Senado Federal' },
+      { r: 400, label: 'Órbita 4: Câmara Federal' },
+      { r: 540, label: 'Órbita 5: CLDF' }
     ];
 
     ctx.setLineDash([3, 7]);
@@ -2024,23 +2056,23 @@ function renderGraph() {
       ctx.font = '700 9px Plus Jakarta Sans, sans-serif';
       ctx.fillStyle = 'rgba(148, 163, 184, 0.35)';
       ctx.textAlign = 'center';
-      ctx.fillText(orb.label, cx, cy - orb.r - 4);
+      ctx.fillText(orb.label, cx, cy - orb.r - 5);
     });
     ctx.setLineDash([]);
   } else if (isPartyHierarchy) {
     const colHeaders = [
-      { x: 90, label: '🏛️ LEGENDA' },
-      { x: 260, label: '🇧🇷 PRESIDENTE' },
-      { x: 440, label: '🏛️ GOVERNADOR' },
-      { x: 620, label: '⭐ SENADO (DF)' },
-      { x: 800, label: '🏛️ DEP. FEDERAIS' },
-      { x: 1000, label: '📍 DEP. DISTRITAIS (CLDF)' }
+      { x: 100, label: '🏛️ LEGENDA' },
+      { x: 300, label: '🇧🇷 PRESIDENTE' },
+      { x: 520, label: '🏛️ GOVERNADOR' },
+      { x: 740, label: '⭐ SENADO (DF)' },
+      { x: 980, label: '🏛️ DEP. FEDERAIS' },
+      { x: 1285, label: '📍 DEP. DISTRITAIS (CLDF)' }
     ];
 
     ctx.setLineDash([4, 6]);
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
     ctx.lineWidth = 1;
-    [175, 350, 530, 710, 890].forEach(divX => {
+    [190, 410, 630, 860, 1100].forEach(divX => {
       ctx.beginPath();
       ctx.moveTo(divX, 40);
       ctx.lineTo(divX, h - 20);
@@ -2204,20 +2236,20 @@ function renderGraph() {
     if (p.node.type === 'PARTY' && isPartyHierarchy) {
       rawLabel = p.node.metadata?.sigla || rawLabel;
     }
-    const cleanLabel = rawLabel.length > 22 ? rawLabel.substring(0, 20) + '..' : rawLabel;
+    const cleanLabel = rawLabel.length > 26 ? rawLabel.substring(0, 24) + '..' : rawLabel;
 
-    ctx.font = isDirectHover ? '800 11px Plus Jakarta Sans, sans-serif' : '700 10px Plus Jakarta Sans, sans-serif';
+    ctx.font = isDirectHover ? '800 11.5px Plus Jakarta Sans, sans-serif' : '700 10.5px Plus Jakarta Sans, sans-serif';
     const textW = ctx.measureText(cleanLabel).width;
 
     if (isRadial) {
       // Posicionamento inteligente no modo Radial (evita colisões e sobreposições)
       if (p.node.type === 'PARTY') {
-        const labelY = p.y + p.radius + 14;
-        ctx.fillStyle = 'rgba(9, 12, 20, 0.9)';
+        const labelY = p.y + p.radius + 16;
+        ctx.fillStyle = 'rgba(9, 12, 20, 0.92)';
         ctx.beginPath();
-        ctx.roundRect(p.x - textW / 2 - 6, labelY - 8, textW + 12, 16, 4);
+        ctx.roundRect(p.x - textW / 2 - 8, labelY - 9, textW + 16, 18, 5);
         ctx.fill();
-        ctx.strokeStyle = isDirectHover ? '#38bdf8' : 'rgba(255, 255, 255, 0.18)';
+        ctx.strokeStyle = isDirectHover ? '#38bdf8' : 'rgba(255, 255, 255, 0.22)';
         ctx.lineWidth = 1;
         ctx.stroke();
 
@@ -2228,21 +2260,21 @@ function renderGraph() {
       } else {
         const cosA = Math.cos(p.angle ?? Math.atan2(p.y - cy, p.x - cx));
         const isRight = cosA >= 0;
-        const labelX = isRight ? (p.x + p.radius + 6) : (p.x - p.radius - 6);
-        const rectX = isRight ? labelX - 2 : labelX - textW - 6;
+        const labelX = isRight ? (p.x + p.radius + 8) : (p.x - p.radius - 8);
+        const rectX = isRight ? labelX - 3 : labelX - textW - 9;
 
-        ctx.fillStyle = 'rgba(9, 12, 20, 0.88)';
+        ctx.fillStyle = 'rgba(8, 11, 20, 0.92)';
         ctx.beginPath();
-        ctx.roundRect(rectX, p.y - 8, textW + 8, 16, 4);
+        ctx.roundRect(rectX, p.y - 9, textW + 12, 18, 5);
         ctx.fill();
-        ctx.strokeStyle = isDirectHover ? '#38bdf8' : 'rgba(255, 255, 255, 0.12)';
+        ctx.strokeStyle = isDirectHover ? '#38bdf8' : 'rgba(255, 255, 255, 0.16)';
         ctx.lineWidth = 1;
         ctx.stroke();
 
-        ctx.fillStyle = isDirectHover ? '#38bdf8' : 'rgba(255, 255, 255, 0.9)';
+        ctx.fillStyle = isDirectHover ? '#38bdf8' : 'rgba(255, 255, 255, 0.95)';
         ctx.textAlign = isRight ? 'left' : 'right';
         ctx.textBaseline = 'middle';
-        ctx.fillText(cleanLabel, isRight ? labelX + 2 : labelX - 2, p.y);
+        ctx.fillText(cleanLabel, isRight ? labelX + 3 : labelX - 3, p.y);
       }
     } else {
       // Posicionamento padrão no modo Linear e Macro (Abaixo do nó)
