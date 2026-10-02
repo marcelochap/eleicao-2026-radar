@@ -1503,3 +1503,310 @@ body {
     font-size: 26px;
   }
 }
+
+/* ================================================= */
+/* VOTING TICKET / COLINHA ELEITORAL 2026            */
+/* ================================================= */
+.printable-only {
+  display: none;
+}
+
+.voting-ticket-card {
+  background: linear-gradient(135deg, rgba(16, 21, 35, 0.95), rgba(24, 32, 54, 0.95));
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  margin-top: 24px;
+  margin-bottom: 28px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+.voting-ticket-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, #f59e0b, #fbbf24, #10b981, #06b6d4);
+}
+.ticket-badge-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.ticket-badge {
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.4);
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.8px;
+}
+.ticket-date {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-subtle);
+}
+.ticket-header h4 {
+  font-size: 18px;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 4px;
+}
+.ticket-header p {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+.ticket-slots {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ticket-slot-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(8, 11, 20, 0.7);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  transition: all 0.2s ease;
+}
+.ticket-slot-item:hover {
+  border-color: rgba(251, 191, 36, 0.4);
+  background: rgba(14, 18, 32, 0.8);
+}
+.slot-cargo-name {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--accent-secondary);
+  letter-spacing: 0.6px;
+}
+.slot-cand-name {
+  font-size: 15px;
+  font-weight: 800;
+  color: #fff;
+  margin-top: 2px;
+}
+.slot-party-info {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+.slot-urna-display {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+.urna-box {
+  width: 28px;
+  height: 38px;
+  background: #000;
+  border: 1.5px solid #334155;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Space Grotesk', monospace;
+  font-size: 20px;
+  font-weight: 800;
+  color: #38bdf8;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.9);
+}
+.ticket-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 18px;
+  flex-wrap: wrap;
+}
+.ticket-btn {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 12px 20px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+.btn-print {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #000;
+  border: none;
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.35);
+}
+.btn-print:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 22px rgba(245, 158, 11, 0.5);
+}
+.btn-copy {
+  background: var(--bg-card);
+  color: #fff;
+  border: 1px solid var(--border-color);
+}
+.btn-copy:hover {
+  border-color: var(--accent-secondary);
+  color: var(--accent-secondary);
+}
+.ticket-legal-note {
+  margin-top: 14px;
+  font-size: 11px;
+  color: var(--text-subtle);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 10px;
+  text-align: center;
+}
+
+/* Botão nos cards de ranking */
+.btn-select-ticket {
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 14px;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text-muted);
+  transition: all 0.2s ease;
+  margin-top: 6px;
+}
+.btn-select-ticket:hover {
+  border-color: #fbbf24;
+  color: #fbbf24;
+}
+.btn-select-ticket.selected {
+  background: rgba(251, 191, 36, 0.2);
+  border-color: #fbbf24;
+  color: #fbbf24;
+}
+
+/* ================================================= */
+/* PRINT STYLES (@media print)                       */
+/* ================================================= */
+@media print {
+  body {
+    background: #fff !important;
+    color: #000 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .glow-bg, .app-header, .app-footer, .nav-tabs, .view-content, .modal-overlay {
+    display: none !important;
+  }
+  .printable-only {
+    display: block !important;
+  }
+  .print-sheet {
+    width: 100%;
+    max-width: 360px;
+    margin: 15px auto;
+    font-family: 'Plus Jakarta Sans', Arial, sans-serif;
+    color: #000;
+  }
+  .print-border-cut {
+    border: 2px dashed #000;
+    padding: 16px;
+    background: #fff;
+    border-radius: 4px;
+  }
+  .print-logo {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    text-align: center;
+    color: #222;
+  }
+  .print-title {
+    font-size: 16px;
+    font-weight: 800;
+    text-align: center;
+    margin: 4px 0 2px 0;
+  }
+  .print-subtitle {
+    font-size: 9px;
+    text-align: center;
+    color: #555;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 6px;
+  }
+  .print-voter-profile {
+    font-size: 10px;
+    font-weight: 700;
+    text-align: center;
+    background: #f1f5f9;
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-bottom: 12px;
+    border: 1px solid #cbd5e1;
+  }
+  .print-order-table {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .print-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid #ddd;
+  }
+  .print-cargo {
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #333;
+  }
+  .print-cand-name {
+    font-size: 13px;
+    font-weight: 800;
+    color: #000;
+  }
+  .print-party {
+    font-size: 9.5px;
+    color: #555;
+  }
+  .print-num-boxes {
+    display: flex;
+    gap: 3px;
+  }
+  .print-num-digit {
+    width: 20px;
+    height: 28px;
+    border: 1.5px solid #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 800;
+    font-family: monospace;
+    background: #fff;
+  }
+  .print-footer {
+    margin-top: 14px;
+    font-size: 8px;
+    color: #444;
+    text-align: center;
+    line-height: 1.4;
+  }
+  .print-cut-line {
+    font-size: 8.5px;
+    font-weight: 700;
+    color: #666;
+    margin-top: 10px;
+    letter-spacing: 0.5px;
+  }
+}

@@ -189,6 +189,37 @@
             <p class="user-profile-desc" id="user-profile-desc">Seus pontos serão plotados em tempo real no plano cartesiano ao lado dos candidatos e partidos das Eleições 2026.</p>
           </div>
 
+          <!-- Card da Colinha Oficial de Votação -->
+          <div class="voting-ticket-card" id="voting-ticket-card" style="display: none;">
+            <div class="ticket-header">
+              <div class="ticket-badge-row">
+                <span class="ticket-badge">ELEIÇÕES 2026 • GUIA DA URNA</span>
+                <span class="ticket-date">1º TURNO · OUTUBRO 2026</span>
+              </div>
+              <h4>🗳️ Sua Colinha Oficial de Votação</h4>
+              <p>Ordem exata de digitação na cabine eleitoral calculada a partir do seu alinhamento. Você pode personalizar qualquer candidato no ranking abaixo.</p>
+            </div>
+
+            <div class="ticket-slots" id="ticket-slots">
+              <!-- Preenchido dinamicamente com os cargos na ordem oficial da urna -->
+            </div>
+
+            <div class="ticket-actions">
+              <button class="ticket-btn btn-print" id="btn-print-colinha">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                <span>Imprimir Colinha de Bolso</span>
+              </button>
+              <button class="ticket-btn btn-copy" id="btn-copy-colinha">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                <span id="copy-btn-text">Copiar para WhatsApp / Notas</span>
+              </button>
+            </div>
+
+            <div class="ticket-legal-note">
+              ⚖️ <em>O uso de cola em papel na cabine é expressamente permitido pelo TSE (Resolução nº 23.669).</em>
+            </div>
+          </div>
+
           <div class="match-rankings-section">
             <div class="match-header-row">
               <h4>🎯 Candidatos com Maior Afinidade Ideológica</h4>
@@ -335,6 +366,33 @@
         <div class="tab-pane" id="tab-financiamento"></div>
         <div class="tab-pane" id="tab-integridade"></div>
         <div class="tab-pane" id="tab-redes"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ÁREA DE IMPRESSÃO EXCLUSIVA DA COLINHA (OCULTA NA TELA, VISÍVEL NO PRINT) -->
+  <div id="printable-colinha-area" class="printable-only">
+    <div class="print-sheet">
+      <div class="print-border-cut">
+        <div class="print-header">
+          <div class="print-logo">JUSTIÇA ELEITORAL · ELEIÇÕES 2026</div>
+          <div class="print-title">COLA DE VOTAÇÃO PARA A URNA</div>
+          <div class="print-subtitle">Radar Eleições 2026 • Alinhamento Ideológico Consciente</div>
+        </div>
+
+        <div class="print-voter-profile" id="print-voter-profile">
+          <!-- Perfil do eleitor -->
+        </div>
+
+        <div class="print-order-table" id="print-order-table">
+          <!-- Tabela de votação na ordem oficial da urna -->
+        </div>
+
+        <div class="print-footer">
+          <p>⚠️ <strong>Dica da Urna:</strong> Confira na tela da urna a foto, o nome e o partido antes de apertar <strong>CONFIRMA</strong>.</p>
+          <p>⚖️ <em>Permitido pelo TSE para orientar o eleitor na cabine de votação (Resolução 23.669).</em></p>
+          <div class="print-cut-line">✂ - - - - - - - - - - CORTE AQUI E LEVE NO BOLSO - - - - - - - - - - ✂</div>
+        </div>
       </div>
     </div>
   </div>

@@ -16,7 +16,8 @@ const state = {
   matchFilterGender: '',
   matchFilterRace: '',
   matchFilterParty: '',
-  latestEvaluationResult: null
+  latestEvaluationResult: null,
+  selectedTicket: {}
 };
 
 // DOM Elements
@@ -583,6 +584,10 @@ function setupQuiz() {
   btnResetQuiz.addEventListener('click', () => {
     state.userAnswers = {};
     state.latestEvaluationResult = null;
+    state.selectedTicket = {};
+    const ticketCard = document.getElementById('voting-ticket-card');
+    if (ticketCard) ticketCard.style.display = 'none';
+
     document.querySelectorAll('.quiz-option').forEach(l => {
       l.classList.remove('selected');
       const input = l.querySelector('input');
@@ -599,6 +604,8 @@ function setupQuiz() {
     matchPartyList.innerHTML = `<div class="empty-state">...</div>`;
     drawCompass(0, 0, false);
   });
+
+  setupColinhaActions();
 
   // Eventos de Filtro de Afinidade
   const genderPills = document.querySelectorAll('#match-gender-pills .pill-btn');
@@ -689,6 +696,14 @@ function setupQuiz() {
   }
 }
 
+const OFFICIAL_BALLOT_ORDER = [
+  { cargo: 'DEPUTADO FEDERAL', label: '1º · Deputado Federal', digits: 4 },
+  { cargo: 'DEPUTADO DISTRITAL', label: '2º · Deputado Distrital', digits: 5 },
+  { cargo: 'SENADOR', label: '3º · Senador', digits: 3 },
+  { cargo: 'GOVERNADOR', label: '4º · Governador do DF', digits: 2 },
+  { cargo: 'PRESIDENTE', label: '5º · Presidente da República', digits: 2 }
+];
+
 async function evaluateQuizAnswers() {
   const answeredCount = Object.keys(state.userAnswers).length;
   if (answeredCount === 0) {
@@ -711,11 +726,62 @@ async function evaluateQuizAnswers() {
     userProfileDesc.textContent = prof.description;
 
     drawCompass(prof.economic, prof.social, true);
+
+    // Auto-popula a Colinha Oficial com os candidatos #1 de cada cargo se ainda não tiverem sido selecionados
+    if (result.allCandidatesRanked) {
+      OFFICIAL_BALLOT_ORDER.forEach(item => {
+        if (!state.selectedTicket[item.cargo]) {
+          const topCand = result.allCandidatesRanked.find(c => c.cargo === item.cargo);
+          if (topCand) {
+            state.selectedTicket[item.cargo] = topCand;
+          }
+        }
+      });
+      const ticketCard = document.getElementById('voting-ticket-card');
+      if (ticketCard) ticketCard.style.display = 'block';
+      renderVotingTicket();
+    }
+
     renderFilteredCargoMatches();
     renderPartyRankings(result.topParties);
   } catch (err) {
     console.error('Erro ao avaliar questionário:', err);
   }
+}
+
+function renderVotingTicket() {
+  const container = document.getElementById('ticket-slots');
+  if (!container) return;
+  container.innerHTML = '';
+
+  OFFICIAL_BALLOT_ORDER.forEach(item => {
+    const cand = state.selectedTicket[item.cargo];
+    const slot = document.createElement('div');
+    slot.className = 'ticket-slot-item';
+
+    let digitsHtml = '';
+    const numStr = cand && cand.numero ? String(cand.numero) : '';
+    for (let i = 0; i < item.digits; i++) {
+      const digit = numStr[i] !== undefined ? numStr[i] : '•';
+      digitsHtml += `<div class="urna-box">${digit}</div>`;
+    }
+
+    slot.innerHTML = `
+      <div style="flex: 1; min-width: 0; padding-right: 14px;">
+        <div class="slot-cargo-name">${item.label} (${item.digits} DÍGITOS)</div>
+        <div class="slot-cand-name" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+          ${cand ? escapeHtml(cand.nome_urna) : '<span style="color: var(--text-subtle); font-weight: normal; font-size: 13px;">Nenhum candidato selecionado</span>'}
+        </div>
+        <div class="slot-party-info">
+          ${cand ? `${cand.partido} · ${cand.fit_percentage ? cand.fit_percentage + '% Fit' : ''}` : 'Escolha um candidato no ranking abaixo'}
+        </div>
+      </div>
+      <div class="slot-urna-display">
+        ${digitsHtml}
+      </div>
+    `;
+    container.appendChild(slot);
+  });
 }
 
 function renderFilteredCargoMatches() {
@@ -773,8 +839,10 @@ function renderFilteredCargoMatches() {
           const raceBadge = c.cor_raca && c.cor_raca !== 'NÃO INFORMADO' ? `<span class="tag-mini">${c.cor_raca}</span>` : '';
           const propBadge = c.tem_proposta ? '<span class="tag-mini" style="color: #34d399; border-color: rgba(52, 211, 153, 0.3);">📄 Plano TSE</span>' : '';
 
+          const isSelectedInColinha = state.selectedTicket[c.cargo] && String(state.selectedTicket[c.cargo].sq_candidato) === String(c.sq_candidato);
+
           return `
-            <div class="cargo-candidate-card" data-sq="${c.sq_candidato}" title="Clique para abrir Dossiê 360º">
+            <div class="cargo-candidate-card" data-sq="${c.sq_candidato}" title="Clique no card para abrir Dossiê 360º">
               <div style="flex: 1;">
                 <div style="display: flex; align-items: center; gap: 8px;">
                   <strong style="color: #fff; font-size: 14px;">${escapeHtml(c.nome_urna)}</strong>
@@ -787,9 +855,12 @@ function renderFilteredCargoMatches() {
                   ${propBadge}
                 </div>
               </div>
-              <div style="text-align: right; margin-left: 12px;">
+              <div style="text-align: right; margin-left: 12px; display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
                 <div class="match-badge ${badgeClass}">${c.fit_percentage}% Fit</div>
-                <div style="font-size: 10px; color: var(--accent-secondary); margin-top: 4px; font-weight: 600;">Ver Dossiê 360º ↗</div>
+                <button class="btn-select-ticket ${isSelectedInColinha ? 'selected' : ''}" data-sq="${c.sq_candidato}" data-cargo="${c.cargo}">
+                  ${isSelectedInColinha ? '✓ Na sua Colinha' : '★ Escolher para Colinha'}
+                </button>
+                <div style="font-size: 10px; color: var(--accent-secondary); margin-top: 2px; font-weight: 600;">Ver Dossiê ↗</div>
               </div>
             </div>
           `;
@@ -814,13 +885,131 @@ function renderFilteredCargoMatches() {
 
   container.innerHTML = html;
 
-  // Event listener para abrir Dossiê 360º ao clicar no card ou nome
+  // Event listener para botões de colocar na Colinha (com stopPropagation)
+  container.querySelectorAll('.btn-select-ticket').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const sq = btn.dataset.sq;
+      const cargo = btn.dataset.cargo;
+      const allCand = state.latestEvaluationResult ? state.latestEvaluationResult.allCandidatesRanked : state.candidates;
+      const cand = allCand.find(c => String(c.sq_candidato) === String(sq));
+      if (cand) {
+        state.selectedTicket[cargo] = cand;
+        renderVotingTicket();
+        renderFilteredCargoMatches();
+        
+        // Suave destaque no card da colinha
+        const ticketCard = document.getElementById('voting-ticket-card');
+        if (ticketCard) {
+          ticketCard.style.boxShadow = '0 0 24px rgba(251, 191, 36, 0.6)';
+          setTimeout(() => {
+            ticketCard.style.boxShadow = '';
+          }, 800);
+        }
+      }
+    });
+  });
+
+  // Event listener para abrir Dossiê 360º ao clicar no card
   container.querySelectorAll('.cargo-candidate-card').forEach(card => {
     card.addEventListener('click', () => {
       const sq = card.dataset.sq;
       if (sq) openCandidateDossier(sq);
     });
   });
+}
+
+function setupColinhaActions() {
+  const btnPrint = document.getElementById('btn-print-colinha');
+  if (btnPrint) {
+    btnPrint.addEventListener('click', () => {
+      preparePrintableColinha();
+      window.print();
+    });
+  }
+
+  const btnCopy = document.getElementById('btn-copy-colinha');
+  if (btnCopy) {
+    btnCopy.addEventListener('click', () => {
+      const text = buildWhatsAppColinha();
+      navigator.clipboard.writeText(text).then(() => {
+        const span = document.getElementById('copy-btn-text');
+        if (span) {
+          const oldText = span.textContent;
+          span.textContent = '✓ Copiado com Sucesso!';
+          setTimeout(() => { span.textContent = oldText; }, 2500);
+        }
+      }).catch(err => {
+        console.error('Falha ao copiar:', err);
+        alert('Texto da cola:\n\n' + text);
+      });
+    });
+  }
+}
+
+function preparePrintableColinha() {
+  const profileDiv = document.getElementById('print-voter-profile');
+  const tableDiv = document.getElementById('print-order-table');
+  if (!profileDiv || !tableDiv) return;
+
+  const prof = state.latestEvaluationResult ? state.latestEvaluationResult.userProfile : null;
+  const quadrantName = prof ? prof.quadrant : 'Cidadão Consciente';
+  profileDiv.innerHTML = `
+    <span><strong>Perfil Político:</strong> ${quadrantName}</span> · 
+    <span>Gerado em ${new Date().toLocaleDateString('pt-BR')}</span>
+  `;
+
+  let tableHtml = '';
+  OFFICIAL_BALLOT_ORDER.forEach(item => {
+    const cand = state.selectedTicket[item.cargo];
+    const numStr = cand && cand.numero ? String(cand.numero) : '';
+    let digitsBoxes = '';
+    for (let i = 0; i < item.digits; i++) {
+      const d = numStr[i] !== undefined ? numStr[i] : ' ';
+      digitsBoxes += `<div class="print-num-digit">${d}</div>`;
+    }
+
+    tableHtml += `
+      <div class="print-row">
+        <div>
+          <div class="print-cargo">${item.label} (${item.digits} dígitos)</div>
+          <div class="print-cand-name">${cand ? escapeHtml(cand.nome_urna) : 'NÃO ESCOLHIDO / EM BRANCO'}</div>
+          <div class="print-party">${cand ? `${cand.partido} · ${escapeHtml(cand.coligacao || '')}` : '-'}</div>
+        </div>
+        <div class="print-num-boxes">
+          ${digitsBoxes}
+        </div>
+      </div>
+    `;
+  });
+
+  tableDiv.innerHTML = tableHtml;
+}
+
+function buildWhatsAppColinha() {
+  const prof = state.latestEvaluationResult ? state.latestEvaluationResult.userProfile : null;
+  const quadrantName = prof ? prof.quadrant : 'Cidadão Consciente';
+
+  let txt = `🗳️ *MINHA COLA DE VOTAÇÃO — ELEIÇÕES 2026*\n`;
+  txt += `📋 *Alinhamento Ideológico:* ${quadrantName}\n`;
+  txt += `Ordem oficial de digitação na Urna Eletrônica:\n\n`;
+
+  OFFICIAL_BALLOT_ORDER.forEach(item => {
+    const cand = state.selectedTicket[item.cargo];
+    if (cand) {
+      txt += `${item.label} (${item.digits} dígitos):\n`;
+      txt += `👉 *${cand.numero}* — ${cand.nome_urna} (${cand.partido})\n\n`;
+    } else {
+      txt += `${item.label} (${item.digits} dígitos):\n`;
+      txt += `👉 _[Não definido / Em branco]_\n\n`;
+    }
+  });
+
+  txt += `⚖️ *Dica TSE:* Na urna, digite os números e confira a foto na tela antes de teclar CONFIRMA.\n`;
+  txt += `🔗 Descubra seu alinhamento com dados reais do TSE:\n`;
+  txt += `https://eleicao-2026-radar.vercel.app/\n`;
+
+  return txt;
 }
 
 function renderPartyRankings(topParties) {
