@@ -302,26 +302,29 @@
           <p>Navegue na teia oficial de candidatos, planos de governo registrados, coligações partidárias e integridade.</p>
         </div>
         <div class="graph-legend">
-          <span class="legend-item"><span class="dot cand-dot"></span> Candidato</span>
           <span class="legend-item"><span class="dot party-dot"></span> Partido</span>
-          <span class="legend-item"><span class="dot prop-dot"></span> Plano de Governo</span>
+          <span class="legend-item"><span class="dot pres-dot"></span> Presidente</span>
+          <span class="legend-item"><span class="dot gov-dot"></span> Governador</span>
+          <span class="legend-item"><span class="dot sen-dot"></span> Senador</span>
+          <span class="legend-item"><span class="dot fed-dot"></span> Dep. Federal</span>
+          <span class="legend-item"><span class="dot dist-dot"></span> Dep. Distrital</span>
         </div>
       </div>
 
-      <!-- Toolbar de Ação e Filtro de Foco -->
+      <!-- Toolbar de Legendas & Presets do Grafo -->
       <div class="graph-toolbar">
         <div class="graph-presets">
           <span class="toolbar-label">Visão Rápida:</span>
-          <button class="graph-preset-btn active" data-preset="all">🌟 Todos com Plano</button>
+          <button class="graph-preset-btn active" data-preset="macro">🏛️ Macro (Todos os Partidos)</button>
           <button class="graph-preset-btn" data-preset="gdf">📍 Disputa GDF (11 Gov)</button>
           <button class="graph-preset-btn" data-preset="pres">🇧🇷 Presidenciáveis</button>
-          <button class="graph-preset-btn" data-preset="parties">🏛️ Partidos & Alianças</button>
         </div>
 
         <div class="graph-focus-wrapper">
-          <label for="graph-focus-select" class="toolbar-label">Foco Individual:</label>
-          <select id="graph-focus-select" class="graph-select">
-            <option value="">🎯 Selecione um Político para Isolar a Constelação...</option>
+          <label for="graph-party-select" class="toolbar-label">Explorar por Partido / Coligação:</label>
+          <select id="graph-party-select" class="graph-select">
+            <option value="">🏛️ Todos os Partidos (Executivo 2026)</option>
+            <!-- Carregado com os partidos -->
           </select>
           <button id="btn-reset-graph" class="btn-icon" title="Resetar Visualização / Centralizar">⟲ Centralizar</button>
         </div>
@@ -330,7 +333,7 @@
       <!-- Workspace Dividido: Canvas Interativo + Inspector Panel Lateral -->
       <div class="graph-workspace">
         <div class="graph-canvas-wrapper">
-          <canvas id="networkCanvas" width="900" height="620"></canvas>
+          <canvas id="networkCanvas" width="1060" height="620"></canvas>
           <div class="canvas-controls-overlay">
             <button id="btn-zoom-in" title="Aproximar Zoom">+</button>
             <button id="btn-zoom-out" title="Afastar Zoom">−</button>

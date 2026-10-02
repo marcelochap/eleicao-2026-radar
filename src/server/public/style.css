@@ -862,9 +862,13 @@ body {
   height: 10px;
   border-radius: 50%;
 }
-.cand-dot { background: #6366f1; box-shadow: 0 0 8px rgba(99, 102, 241, 0.6); }
-.party-dot { background: #06b6d4; box-shadow: 0 0 8px rgba(6, 182, 212, 0.6); }
-.prop-dot { background: #10b981; box-shadow: 0 0 8px rgba(16, 185, 129, 0.6); }
+.party-dot { background: #6366f1; box-shadow: 0 0 8px rgba(99, 102, 241, 0.6); }
+.pres-dot { background: #f59e0b; box-shadow: 0 0 8px rgba(245, 158, 11, 0.6); }
+.gov-dot { background: #8b5cf6; box-shadow: 0 0 8px rgba(139, 92, 246, 0.6); }
+.sen-dot { background: #3b82f6; box-shadow: 0 0 8px rgba(59, 130, 246, 0.6); }
+.fed-dot { background: #06b6d4; box-shadow: 0 0 8px rgba(6, 182, 212, 0.6); }
+.dist-dot { background: #10b981; box-shadow: 0 0 8px rgba(16, 185, 129, 0.6); }
+.prop-dot { background: #34d399; box-shadow: 0 0 8px rgba(52, 211, 153, 0.6); }
 
 /* Graph Toolbar */
 .graph-toolbar {
