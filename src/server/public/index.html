@@ -162,7 +162,12 @@
             <div class="progress-bar-container">
               <div class="progress-bar" id="quiz-progress-bar" style="width: 0%"></div>
             </div>
-            <div class="quiz-progress-text" id="quiz-progress-text">0 de 15 respondidas</div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+              <button class="header-calc-btn" id="btn-calculate-match-top" style="display: none;">
+                ⚡ Calcular Alinhamento Agora
+              </button>
+              <div class="quiz-progress-text" id="quiz-progress-text" style="margin-bottom: 0;">0 de 15 respondidas</div>
+            </div>
           </div>
 
           <div class="questions-list" id="questions-list">
@@ -268,6 +273,20 @@
               <div class="empty-state">...</div>
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- Barra Flutuante de Ação Rápida do Questionário -->
+      <div class="floating-quiz-bar" id="floating-quiz-bar">
+        <div class="floating-bar-content">
+          <div class="floating-info">
+            <span class="floating-badge" id="floating-answered-count">0/15</span>
+            <span class="floating-text">questões respondidas</span>
+          </div>
+          <button class="floating-calc-btn" id="btn-calculate-match-floating">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+            <span>Calcular Alinhamento & Ver Resultados ↗</span>
+          </button>
         </div>
       </div>
     </div>

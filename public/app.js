@@ -86,8 +86,13 @@ function setupNavigation() {
         const count = Object.keys(u).length;
         if (count > 0) evaluateQuizAnswers();
         else drawCompass(0, 0, false);
-      } else if (targetView === 'graph-view') {
-        renderGraph();
+        updateQuizProgress();
+      } else {
+        const floatingBar = document.getElementById('floating-quiz-bar');
+        if (floatingBar) floatingBar.classList.remove('visible');
+        if (targetView === 'graph-view') {
+          renderGraph();
+        }
       }
     });
   });
@@ -574,6 +579,24 @@ function updateQuizProgress() {
 
   quizProgressBar.style.width = `${pct}%`;
   quizProgressText.textContent = `${answered} de ${total} respondidas (${pct}%)`;
+
+  // Atualiza botão no cabeçalho do quiz
+  const topCalcBtn = document.getElementById('btn-calculate-match-top');
+  if (topCalcBtn) {
+    topCalcBtn.style.display = answered > 0 ? 'inline-flex' : 'none';
+  }
+
+  // Atualiza barra flutuante de cálculo rápido
+  const floatingBar = document.getElementById('floating-quiz-bar');
+  const floatingCount = document.getElementById('floating-answered-count');
+  if (floatingBar && floatingCount) {
+    floatingCount.textContent = `${answered}/${total}`;
+    if (answered > 0 && state.currentView === 'compass-view') {
+      floatingBar.classList.add('visible');
+    } else {
+      floatingBar.classList.remove('visible');
+    }
+  }
 }
 
 function setupQuiz() {
@@ -581,12 +604,29 @@ function setupQuiz() {
     evaluateQuizAnswers();
   });
 
+  const topCalcBtn = document.getElementById('btn-calculate-match-top');
+  if (topCalcBtn) {
+    topCalcBtn.addEventListener('click', () => {
+      evaluateQuizAnswers();
+    });
+  }
+
+  const floatingCalcBtn = document.getElementById('btn-calculate-match-floating');
+  if (floatingCalcBtn) {
+    floatingCalcBtn.addEventListener('click', () => {
+      evaluateQuizAnswers();
+    });
+  }
+
   btnResetQuiz.addEventListener('click', () => {
     state.userAnswers = {};
     state.latestEvaluationResult = null;
     state.selectedTicket = {};
     const ticketCard = document.getElementById('voting-ticket-card');
     if (ticketCard) ticketCard.style.display = 'none';
+
+    const floatingBar = document.getElementById('floating-quiz-bar');
+    if (floatingBar) floatingBar.classList.remove('visible');
 
     document.querySelectorAll('.quiz-option').forEach(l => {
       l.classList.remove('selected');
@@ -744,8 +784,22 @@ async function evaluateQuizAnswers() {
 
     renderFilteredCargoMatches();
     renderPartyRankings(result.topParties);
+
+    // Rola a tela suavemente para os resultados (Bússola e Colinha Oficial)
+    setTimeout(() => {
+      scrollToResults();
+    }, 120);
   } catch (err) {
     console.error('Erro ao avaliar questionário:', err);
+  }
+}
+
+function scrollToResults() {
+  const resultsTarget = document.querySelector('.results-panel') || document.getElementById('compassCanvas');
+  if (resultsTarget) {
+    const yOffset = -90; // compensa a navbar fixa do topo
+    const y = resultsTarget.getBoundingClientRect().top + window.pageYOffset + yOffset;
+    window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
   }
 }
 

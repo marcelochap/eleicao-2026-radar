@@ -1810,3 +1810,112 @@ body {
     letter-spacing: 0.5px;
   }
 }
+
+/* ================================================= */
+/* FLOATING QUIZ ACTION BAR & HEADER CALC BUTTON     */
+/* ================================================= */
+.header-calc-btn {
+  background: var(--gradient-brand);
+  border: none;
+  color: #fff;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 6px 14px;
+  border-radius: 16px;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(99, 102, 241, 0.4);
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.header-calc-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.6);
+}
+
+.floating-quiz-bar {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: rgba(15, 23, 42, 0.94);
+  border: 1px solid rgba(99, 102, 241, 0.45);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6), 0 0 24px rgba(99, 102, 241, 0.3);
+  border-radius: 40px;
+  padding: 8px 12px 8px 20px;
+  z-index: 900;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  opacity: 0;
+  pointer-events: none;
+}
+.floating-quiz-bar.visible {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+  pointer-events: all;
+}
+.floating-bar-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.floating-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.floating-badge {
+  background: rgba(99, 102, 241, 0.25);
+  color: #a5b4fc;
+  border: 1px solid rgba(99, 102, 241, 0.4);
+  font-size: 12px;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-family: 'Space Grotesk', monospace;
+}
+.floating-text {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-main);
+  white-space: nowrap;
+}
+.floating-calc-btn {
+  background: var(--gradient-brand);
+  border: none;
+  color: #fff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  padding: 10px 18px;
+  border-radius: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.45);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+.floating-calc-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 22px rgba(99, 102, 241, 0.65);
+}
+
+@media (max-width: 640px) {
+  .floating-quiz-bar {
+    bottom: 16px;
+    width: calc(100% - 32px);
+    max-width: 400px;
+    padding: 6px 8px 6px 14px;
+  }
+  .floating-text {
+    display: none;
+  }
+  .floating-calc-btn {
+    font-size: 12px;
+    padding: 8px 14px;
+  }
+}
