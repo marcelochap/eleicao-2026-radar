@@ -1,10 +1,15 @@
 import { DatabaseSync } from 'node:sqlite';
 import path from 'path';
 
-const DB_PATH = path.resolve('data', 'eleicoes_2026.db');
+const DB_PATH = path.join(process.cwd(), 'data', 'eleicoes_2026.db');
+
+let _dbInstance = null;
 
 export function getDatabase() {
-  return new DatabaseSync(DB_PATH, { readOnly: true });
+  if (!_dbInstance) {
+    _dbInstance = new DatabaseSync(DB_PATH, { readOnly: true });
+  }
+  return _dbInstance;
 }
 
 export function searchPolitician(query, options = {}) {

@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Radar Eleições 2026 | Inspeção Consciente & Bússola Política</title>
+  <meta name="description" content="Plataforma de inteligência eleitoral baseada em dados abertos do TSE: RAG, Grafo de Conhecimento, Dossiê 360º e Bússola de Alinhamento Político.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Background Glows -->
+  <div class="glow-bg glow-1"></div>
+  <div class="glow-bg glow-2"></div>
+
+  <!-- Header & Navigation -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand-section">
+        <div class="brand-badge">2026</div>
+        <div class="brand-titles">
+          <h1>RADAR ELEIÇÕES</h1>
+          <p>Inspeção Consciente & Alinhamento Político</p>
+        </div>
+      </div>
+
+      <nav class="nav-tabs">
+        <button class="nav-btn active" data-view="dossier-view" id="nav-dossier-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          Dossiê dos Políticos
+        </button>
+        <button class="nav-btn" data-view="compass-view" id="nav-compass-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
+          Bússola & Questionário
+        </button>
+        <button class="nav-btn" data-view="graph-view" id="nav-graph-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><line x1="20" y1="4" x2="8.12" y2="15.88"></line><line x1="14.47" y1="14.48" x2="20" y2="20"></line><circle cx="18" cy="6" r="3"></circle><circle cx="18" cy="18" r="3"></circle></svg>
+          Grafo Graphify
+        </button>
+      </nav>
+
+      <div class="header-right">
+        <div class="status-indicator">
+          <span class="status-dot"></span>
+          <span>TSE RAG Ativo</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero & Global Stats -->
+  <section class="hero-section">
+    <div class="hero-container">
+      <div class="hero-tag">BASE OFICIAL TSE ELEIÇÕES 2026 · DISTRITO FEDERAL & BRASIL</div>
+      <h2 class="hero-headline">Decida seu voto com base em <span class="highlight-gradient">dados reais</span>, planos de governo e integridade pública.</h2>
+      <p class="hero-subtext">Cruzamento determinístico de declarações de bens, planos de metas registrados no TSE, certidões criminais, processos judiciais e financiamento eleitoral.</p>
+
+      <div class="stats-row" id="stats-container">
+        <div class="stat-card">
+          <div class="stat-value" id="stat-candidatos">...</div>
+          <div class="stat-label">Candidatos Cadastrados</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stat-propostas">...</div>
+          <div class="stat-label">Planos de Governo em PDF</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stat-patrimonio">...</div>
+          <div class="stat-label">Patrimônio Declarado</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stat-certidoes">...</div>
+          <div class="stat-label">Certidões Criminais TRE</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VIEW 1: DOSSIÊ ELEITORAL & FILTROS -->
+  <main class="view-content active" id="dossier-view">
+    <div class="container">
+      <!-- Search & Filters Container -->
+      <div class="filter-panel">
+        <div class="search-box">
+          <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="text" id="search-input" placeholder="Buscar por candidato, partido (ex: Celina, Leandro Grass, NOVO, PT, PSD)...">
+          <button id="search-clear-btn" class="clear-btn">&times;</button>
+        </div>
+
+        <div class="filter-controls">
+          <div class="filter-group">
+            <label for="filter-cargo">Cargo:</label>
+            <select id="filter-cargo">
+              <option value="">Todos os Cargos</option>
+              <option value="GOVERNADOR">Governador</option>
+              <option value="PRESIDENTE">Presidente</option>
+              <option value="SENADOR">Senador</option>
+              <option value="DEPUTADO FEDERAL">Deputado Federal</option>
+              <option value="DEPUTADO DISTRITAL">Deputado Distrital</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label for="filter-partido">Partido:</label>
+            <select id="filter-partido">
+              <option value="">Todos os Partidos</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label for="filter-proposta">Plano de Governo:</label>
+            <select id="filter-proposta">
+              <option value="">Todos</option>
+              <option value="true">Apenas com Plano TSE (PDF)</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label for="filter-order">Ordenar por:</label>
+            <select id="filter-order">
+              <option value="default">Relevância / Cargo</option>
+              <option value="patrimonio">Maior Patrimônio Declarado</option>
+              <option value="receitas">Mais Recursos de Campanha</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Category Chips -->
+      <div class="chips-container" id="chips-container">
+        <button class="chip-btn active" data-cargo="">Todos</button>
+        <button class="chip-btn" data-cargo="GOVERNADOR">Governadores (DF)</button>
+        <button class="chip-btn" data-cargo="PRESIDENTE">Presidente (BR)</button>
+        <button class="chip-btn" data-cargo="SENADOR">Senador (DF)</button>
+        <button class="chip-btn" data-cargo="DEPUTADO FEDERAL">Dep. Federal (DF)</button>
+        <button class="chip-btn" data-cargo="DEPUTADO DISTRITAL">Dep. Distrital (DF)</button>
+      </div>
+
+      <!-- Results Count -->
+      <div class="results-header">
+        <span id="results-count">Carregando candidatos...</span>
+      </div>
+
+      <!-- Candidates Grid -->
+      <div class="candidates-grid" id="candidates-grid">
+        <!-- Cards inseridos dinamicamente -->
+      </div>
+    </div>
+  </main>
+
+  <!-- VIEW 2: BÚSSOLA ELEITORAL & QUESTIONÁRIO -->
+  <section class="view-content" id="compass-view">
+    <div class="container">
+      <div class="compass-layout">
+        <!-- Coluna da Esquerda: Questionário -->
+        <div class="quiz-panel">
+          <div class="quiz-header">
+            <h3>Questionário de Alinhamento Político 2026</h3>
+            <p>15 questões estratégicas sobre Economia, Costumes, Segurança, Meio Ambiente e Gestão Pública. Suas respostas calculam sua coordenada precisa e identificam quais candidatos e partidos têm mais aderência com você.</p>
+            <div class="progress-bar-container">
+              <div class="progress-bar" id="quiz-progress-bar" style="width: 0%"></div>
+            </div>
+            <div class="quiz-progress-text" id="quiz-progress-text">0 de 15 respondidas</div>
+          </div>
+
+          <div class="questions-list" id="questions-list">
+            <!-- Perguntas inseridas dinamicamente -->
+          </div>
+
+          <div class="quiz-actions">
+            <button class="primary-btn" id="btn-calculate-match">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+              Calcular Meu Alinhamento & Gerar Ranking
+            </button>
+            <button class="secondary-btn" id="btn-reset-quiz">Limpar Respostas</button>
+          </div>
+        </div>
+
+        <!-- Coluna da Direita: Mapa da Bússola & Ranking -->
+        <div class="results-panel">
+          <div class="compass-canvas-container">
+            <h4>Seu Mapa no Espectro Político</h4>
+            <div class="canvas-wrapper">
+              <canvas id="compassCanvas" width="460" height="460"></canvas>
+            </div>
+            <div class="user-quadrant-badge" id="user-quadrant-badge">Responda ao questionário para ver sua posição</div>
+            <p class="user-profile-desc" id="user-profile-desc">Seus pontos serão plotados em tempo real no plano cartesiano ao lado dos candidatos e partidos das Eleições 2026.</p>
+          </div>
+
+          <div class="match-rankings-section">
+            <div class="match-header-row">
+              <h4>🎯 Candidatos com Maior Afinidade Ideológica</h4>
+              <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Filtre o resultado por perfil representativo e veja o Top 3 por cargo eleitoral.</p>
+            </div>
+
+            <!-- Filtros de Afinidade -->
+            <div class="match-filters-box">
+              <div class="match-filter-item">
+                <label>Gênero:</label>
+                <div class="filter-pills" id="match-gender-pills">
+                  <button class="pill-btn active" data-gender="">Todos</button>
+                  <button class="pill-btn" data-gender="FEMININO">♀ Mulheres</button>
+                  <button class="pill-btn" data-gender="MASCULINO">♂ Homens</button>
+                </div>
+              </div>
+
+              <div class="match-filter-item">
+                <label>Etnia / Cor Declarada:</label>
+                <div class="filter-pills" id="match-race-pills">
+                  <button class="pill-btn active" data-race="">Todas</button>
+                  <button class="pill-btn" data-race="PRETA">Preta</button>
+                  <button class="pill-btn" data-race="PARDA">Parda</button>
+                  <button class="pill-btn" data-race="INDÍGENA">Indígena</button>
+                  <button class="pill-btn" data-race="BRANCA">Branca</button>
+                  <button class="pill-btn" data-race="AMARELA">Amarela</button>
+                </div>
+              </div>
+
+              <div class="match-filter-item">
+                <label for="match-filter-partido">Partido:</label>
+                <select id="match-filter-partido" class="match-select">
+                  <option value="">Todos os Partidos</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Top 3 Por Cargo Político -->
+            <div class="cargo-results-container" id="cargo-results-container">
+              <div class="empty-state">Responda ao questionário e clique em 'Calcular Meu Alinhamento' para ver os Top 3 por cargo.</div>
+            </div>
+
+            <!-- Partidos com Maior Afinidade -->
+            <h4 style="margin-top: 28px; margin-bottom: 12px;">🏛️ Partidos com Maior Afinidade</h4>
+            <div class="match-list" id="match-party-list">
+              <div class="empty-state">...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VIEW 3: GRAFO GRAPHIFY EXPLORER -->
+  <section class="view-content" id="graph-view">
+    <div class="container">
+      <div class="graph-header">
+        <div>
+          <h3>Grafo de Conhecimento Eleitoral (Graphify Standard)</h3>
+          <p>Rede determinística de conexões: Candidatos, Partidos, Coligações, Planos de Governo, Patrimônio e Certidões Judiciais. Cada aresta possui explicação formal.</p>
+        </div>
+        <div class="graph-legend">
+          <span class="legend-item"><span class="dot cand-dot"></span> Candidato</span>
+          <span class="legend-item"><span class="dot party-dot"></span> Partido</span>
+          <span class="legend-item"><span class="dot prop-dot"></span> Plano de Governo</span>
+          <span class="legend-item"><span class="dot asset-dot"></span> Patrimônio Declarado</span>
+        </div>
+      </div>
+
+      <div class="graph-canvas-container">
+        <canvas id="networkCanvas" width="1140" height="650"></canvas>
+        <div class="graph-node-details" id="graph-node-details">
+          <h4>Detalhe da Conexão</h4>
+          <p id="graph-details-text">Clique em qualquer nó ou aresta do grafo para inspecionar os metadados e a relação explicada.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MODAL DOSSIÊ 360º DO CANDIDATO -->
+  <div class="modal-overlay" id="dossier-modal">
+    <div class="modal-container">
+      <button class="modal-close-btn" id="modal-close-btn">&times;</button>
+      
+      <div class="modal-header" id="modal-header-content">
+        <!-- Inserido dinamicamente -->
+      </div>
+
+      <div class="modal-tabs">
+        <button class="modal-tab-btn active" data-tab="tab-proposta">Ideias & Propostas (TSE)</button>
+        <button class="modal-tab-btn" data-tab="tab-patrimonio">Patrimônio & Bens</button>
+        <button class="modal-tab-btn" data-tab="tab-financiamento">Financiamento Eleitoral</button>
+        <button class="modal-tab-btn" data-tab="tab-integridade">Histórico & Certidões</button>
+        <button class="modal-tab-btn" data-tab="tab-redes">Canais & Redes</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="tab-pane active" id="tab-proposta"></div>
+        <div class="tab-pane" id="tab-patrimonio"></div>
+        <div class="tab-pane" id="tab-financiamento"></div>
+        <div class="tab-pane" id="tab-integridade"></div>
+        <div class="tab-pane" id="tab-redes"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

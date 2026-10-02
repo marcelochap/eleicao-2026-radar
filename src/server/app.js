@@ -10,6 +10,7 @@ const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
+app.use(express.static(path.resolve('public')));
 app.use(express.static(path.resolve('src', 'server', 'public')));
 
 // Estatísticas globais
@@ -117,15 +118,20 @@ app.post('/api/questionnaire/evaluate', (req, res) => {
 });
 
 // Knowledge Graph (Graphify Standard)
+let cachedGraphData = null;
+
 app.get('/api/graph', (req, res) => {
   try {
-    const graphPath = path.resolve('data', 'graphify_knowledge_graph.json');
-    if (!fs.existsSync(graphPath)) {
-      return res.status(404).json({ error: 'Grafo ainda não gerado' });
+    const graphPath = path.join(process.cwd(), 'data', 'graphify_knowledge_graph.json');
+    if (!cachedGraphData) {
+      if (!fs.existsSync(graphPath)) {
+        return res.status(404).json({ error: 'Grafo ainda não gerado' });
+      }
+      cachedGraphData = JSON.parse(fs.readFileSync(graphPath, 'utf-8'));
     }
 
     const candId = req.query.candidato;
-    const rawData = JSON.parse(fs.readFileSync(graphPath, 'utf-8'));
+    const rawData = cachedGraphData;
 
     // Se solicitar subgrafo de um candidato específico
     if (candId) {
@@ -166,12 +172,21 @@ app.get('/api/graph', (req, res) => {
 
 // Fallback para SPA
 app.use((req, res) => {
-  res.sendFile(path.resolve('src', 'server', 'public', 'index.html'));
+  const indexPath = path.resolve('src', 'server', 'public', 'index.html');
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    res.status(404).send('Not Found');
+  }
 });
 
-app.listen(PORT, () => {
-  console.log(`\n======================================================`);
-  console.log(`🚀 SERVIDOR ELEIÇÕES 2026 ATIVO EM http://localhost:${PORT}`);
-  console.log(`📊 Acesse o painel de inspeção e alinhamento político`);
-  console.log(`======================================================\n`);
-});
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`\n======================================================`);
+    console.log(`🚀 SERVIDOR ELEIÇÕES 2026 ATIVO EM http://localhost:${PORT}`);
+    console.log(`📊 Acesse o painel de inspeção e alinhamento político`);
+    console.log(`======================================================\n`);
+  });
+}
+
+export default app;

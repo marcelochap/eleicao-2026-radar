@@ -7,7 +7,8 @@
   "scripts": {
     "extract": "node src/pipeline/extract.js",
     "build-graph": "node src/pipeline/build_graph.js",
-    "dev": "node src/server/index.js"
+    "dev": "node src/server/app.js",
+    "start": "node src/server/app.js"
   },
   "keywords": [
     "eleicoes-2026",
@@ -24,5 +25,8 @@
     "csv-parser": "^3.2.1",
     "express": "^5.2.1",
     "pdf-parse": "^2.4.5"
+  },
+  "engines": {
+    "node": ">=22.5.0"
   }
 }
