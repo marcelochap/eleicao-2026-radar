@@ -1248,6 +1248,7 @@ const graphState = {
   selectedNodeId: null,
   activePreset: 'macro', // 'macro', 'gdf', 'pres', 'party'
   activeParty: '',
+  layoutMode: 'radial', // 'radial' ou 'linear'
   isDragging: false,
   dragStartX: 0,
   dragStartY: 0,
@@ -1345,6 +1346,11 @@ async function selectPartyInGraph(sigla) {
     b.classList.toggle('active', !sigla && b.dataset.preset === 'macro');
   });
 
+  const layoutToggle = document.getElementById('graph-layout-toggle');
+  if (layoutToggle) {
+    layoutToggle.style.display = sigla ? 'flex' : 'none';
+  }
+
   graphState.activeParty = sigla;
   graphState.activePreset = sigla ? 'party' : 'macro';
 
@@ -1365,8 +1371,26 @@ async function selectPartyInGraph(sigla) {
 function setupGraphControls() {
   const canvas = document.getElementById('networkCanvas');
   if (!canvas) return;
-  canvas.width = 1060;
-  canvas.height = 620;
+  canvas.width = 1140;
+  canvas.height = 680;
+
+  // Layout mode buttons (Radial vs Linear)
+  const btnRadial = document.getElementById('btn-layout-radial');
+  const btnLinear = document.getElementById('btn-layout-linear');
+  btnRadial?.addEventListener('click', () => {
+    graphState.layoutMode = 'radial';
+    btnRadial.classList.add('active');
+    btnLinear?.classList.remove('active');
+    resetGraphTransform();
+    renderGraph();
+  });
+  btnLinear?.addEventListener('click', () => {
+    graphState.layoutMode = 'linear';
+    btnLinear.classList.add('active');
+    btnRadial?.classList.remove('active');
+    resetGraphTransform();
+    renderGraph();
+  });
 
   // Preset buttons
   document.querySelectorAll('.graph-preset-btn').forEach(btn => {
@@ -1385,6 +1409,9 @@ function setupGraphControls() {
       const select = document.getElementById('graph-party-select');
       if (select) select.value = '';
       graphState.activeParty = '';
+      const layoutToggle = document.getElementById('graph-layout-toggle');
+      if (layoutToggle) layoutToggle.style.display = 'none';
+
       await loadGraphData('');
       resetGraphTransform();
       renderGraph();
@@ -1572,6 +1599,7 @@ function renderGraph() {
   ctx.clearRect(0, 0, w, h);
 
   const isPartyHierarchy = (state.graphData.mode === 'PARTY_TICKET_HIERARCHY') || Boolean(graphState.activeParty);
+  const isRadial = isPartyHierarchy && (graphState.layoutMode !== 'linear');
   const allNodes = state.graphData.nodes || [];
   const allEdges = state.graphData.edges || [];
 
@@ -1602,10 +1630,6 @@ function renderGraph() {
   const positions = {};
 
   if (isPartyHierarchy) {
-    // =========================================================================
-    // MODE 1: PARTY_TICKET_HIERARCHY (CASCADING 6-TIER TREE)
-    // Partido -> Presidente -> Governador -> Senador -> Dep. Fed -> Dep. Dist
-    // =========================================================================
     const partyNodes = nodes.filter(n => n.type === 'PARTY');
     const presNodes = nodes.filter(n => n.type === 'CANDIDATE' && (n.metadata?.cargo === 'PRESIDENTE' || n.metadata?.cargo === 'VICE-PRESIDENTE'));
     const govNodes = nodes.filter(n => n.type === 'CANDIDATE' && (n.metadata?.cargo === 'GOVERNADOR' || n.metadata?.cargo === 'VICE-GOVERNADOR'));
@@ -1615,117 +1639,262 @@ function renderGraph() {
     const propNodes = nodes.filter(n => n.type === 'GOVERNMENT_PLAN');
     const coalNodes = nodes.filter(n => n.type === 'COALITION');
 
-    // Column positions across 1060px canvas
-    const colX = {
-      party: 85,
-      pres: 240,
-      gov: 410,
-      sen: 580,
-      fed: 755,
-      distA: 920,
-      distB: 1000
-    };
+    if (isRadial) {
+      // =======================================================================
+      // MODE 1A: RADIAL CONSTELLATION (ÓRBITAS DO PODER)
+      // Centro (R=0): Partido
+      // Órbita 1 (R=65): Presidente
+      // Órbita 2 (R=120): Governador + Plano TSE
+      // Órbita 3 (R=175): Senadores
+      // Órbita 4 (R=230): Deputados Federais
+      // Órbita 5 (R=285): Deputados Distritais (CLDF - com alternância anti-colisão)
+      // =======================================================================
 
-    // Col 0: Party
-    partyNodes.forEach((p, idx) => {
-      positions[p.id] = {
-        x: colX.party,
-        y: cy + (idx - (partyNodes.length - 1) / 2) * 90,
-        radius: 22,
-        color: '#6366f1',
-        node: p,
-        tier: 0,
-        tierLabel: 'LEGENDA'
-      };
-    });
-
-    // Col 1: Presidente & Vice
-    distributeInColumn(presNodes, colX.pres, cy, 320, positions, (node) => ({
-      radius: node.metadata?.cargo === 'PRESIDENTE' ? 16 : 13,
-      color: '#f59e0b',
-      tier: 1,
-      tierLabel: 'PRESIDENTE'
-    }));
-
-    // Col 2: Governador & Vice
-    distributeInColumn(govNodes, colX.gov, cy, 340, positions, (node) => ({
-      radius: node.metadata?.cargo === 'GOVERNADOR' ? 16 : 13,
-      color: '#8b5cf6',
-      tier: 2,
-      tierLabel: 'GOVERNADOR'
-    }));
-
-    // Col 3: Senadores & Suplentes
-    distributeInColumn(senNodes, colX.sen, cy, 420, positions, (node) => ({
-      radius: node.metadata?.cargo === 'SENADOR' ? 15 : 11,
-      color: '#3b82f6',
-      tier: 3,
-      tierLabel: 'SENADOR'
-    }));
-
-    // Col 4: Deputados Federais (DF)
-    distributeInColumn(fedNodes, colX.fed, cy, 480, positions, () => ({
-      radius: 12,
-      color: '#06b6d4',
-      tier: 4,
-      tierLabel: 'DEP. FEDERAL'
-    }));
-
-    // Col 5: Deputados Distritais (DF) - Staggered into two sub-columns
-    const distA = distNodes.filter((_, i) => i % 2 === 0);
-    const distB = distNodes.filter((_, i) => i % 2 !== 0);
-    distributeInColumn(distA, colX.distA, cy, 510, positions, () => ({
-      radius: 10,
-      color: '#10b981',
-      tier: 5,
-      tierLabel: 'DEP. DISTRITAL'
-    }));
-    distributeInColumn(distB, colX.distB, cy + 18, 510, positions, () => ({
-      radius: 10,
-      color: '#10b981',
-      tier: 5,
-      tierLabel: 'DEP. DISTRITAL'
-    }));
-
-    // Government Plans
-    propNodes.forEach((pr, i) => {
-      const parentGov = govNodes.find(g => pr.id.includes(g.metadata?.sq_candidato || '###')) ||
-                        presNodes.find(p => pr.id.includes(p.metadata?.sq_candidato || '###'));
-      if (parentGov && positions[parentGov.id]) {
-        const pPos = positions[parentGov.id];
-        positions[pr.id] = {
-          x: pPos.x + 38,
-          y: pPos.y - 28,
-          radius: 9,
-          color: '#34d399',
-          node: pr,
-          tier: pPos.tier + 0.5,
-          tierLabel: 'PLANO TSE'
+      // 0. Centro: Partido
+      partyNodes.forEach((p) => {
+        positions[p.id] = {
+          x: cx,
+          y: cy,
+          radius: 26,
+          color: '#6366f1',
+          node: p,
+          tier: 0,
+          tierLabel: 'LEGENDA',
+          angle: 0
         };
-      } else {
-        positions[pr.id] = {
-          x: colX.gov + 45,
-          y: 70 + i * 35,
-          radius: 9,
-          color: '#34d399',
-          node: pr,
-          tier: 2.5
-        };
-      }
-    });
+      });
 
-    // Coalition nodes
-    coalNodes.forEach((cn, i) => {
-      positions[cn.id] = {
-        x: colX.party + 70,
-        y: cy + 150 + i * 50,
-        radius: 11,
-        color: '#ec4899',
-        node: cn,
-        tier: 0.5,
-        tierLabel: 'COLIGAÇÃO'
+      // 1. Órbita 1: Presidência (Topo central / Noroeste)
+      presNodes.forEach((p, idx) => {
+        const baseAngle = -Math.PI / 2;
+        const angle = presNodes.length === 1 ? baseAngle : baseAngle - 0.25 + idx * 0.5;
+        positions[p.id] = {
+          x: cx + 65 * Math.cos(angle),
+          y: cy + 65 * Math.sin(angle),
+          radius: p.metadata?.cargo === 'PRESIDENTE' ? 16 : 13,
+          color: '#f59e0b',
+          node: p,
+          tier: 1,
+          tierLabel: 'PRESIDENTE',
+          angle
+        };
+      });
+
+      // 2. Órbita 2: Governo do DF (Nordeste / 1h30)
+      govNodes.forEach((g, idx) => {
+        const baseAngle = -Math.PI * 0.25;
+        const angle = govNodes.length === 1 ? baseAngle : baseAngle - 0.2 + idx * 0.4;
+        positions[g.id] = {
+          x: cx + 120 * Math.cos(angle),
+          y: cy + 120 * Math.sin(angle),
+          radius: g.metadata?.cargo === 'GOVERNADOR' ? 16 : 13,
+          color: '#8b5cf6',
+          node: g,
+          tier: 2,
+          tierLabel: 'GOVERNADOR',
+          angle
+        };
+      });
+
+      // Planos de Governo (satélite do governador/presidente)
+      propNodes.forEach((pr) => {
+        const parent = govNodes[0] || presNodes[0];
+        const pPos = parent ? positions[parent.id] : null;
+        if (pPos) {
+          positions[pr.id] = {
+            x: pPos.x + 28,
+            y: pPos.y - 18,
+            radius: 9,
+            color: '#34d399',
+            node: pr,
+            tier: 2.5,
+            tierLabel: 'PLANO TSE',
+            angle: pPos.angle
+          };
+        } else {
+          positions[pr.id] = {
+            x: cx + 145,
+            y: cy - 90,
+            radius: 9,
+            color: '#34d399',
+            node: pr,
+            tier: 2.5,
+            tierLabel: 'PLANO TSE',
+            angle: 0
+          };
+        }
+      });
+
+      // 3. Órbita 3: Senado Federal (Noroeste / 10h30)
+      senNodes.forEach((s, idx) => {
+        const baseAngle = -Math.PI * 0.75;
+        const angle = senNodes.length === 1 ? baseAngle : baseAngle - 0.25 + idx * 0.5;
+        positions[s.id] = {
+          x: cx + 175 * Math.cos(angle),
+          y: cy + 175 * Math.sin(angle),
+          radius: s.metadata?.cargo === 'SENADOR' ? 15 : 12,
+          color: '#3b82f6',
+          node: s,
+          tier: 3,
+          tierLabel: 'SENADOR',
+          angle
+        };
+      });
+
+      // 4. Órbita 4: Deputados Federais (Leque amplo na órbita 4)
+      fedNodes.forEach((f, idx) => {
+        const angle = -Math.PI + ((idx + 0.5) / Math.max(1, fedNodes.length)) * (Math.PI * 2);
+        positions[f.id] = {
+          x: cx + 230 * Math.cos(angle),
+          y: cy + 230 * Math.sin(angle),
+          radius: 12,
+          color: '#06b6d4',
+          node: f,
+          tier: 4,
+          tierLabel: 'DEP. FEDERAL',
+          angle
+        };
+      });
+
+      // 5. Órbita 5: Deputados Distritais (CLDF - Órbita Externa com alternância de raio)
+      distNodes.forEach((d, idx) => {
+        const angle = -Math.PI / 2 + (idx / Math.max(1, distNodes.length)) * (Math.PI * 2);
+        const rDist = (idx % 2 === 0) ? 275 : 295;
+        positions[d.id] = {
+          x: cx + rDist * Math.cos(angle),
+          y: cy + rDist * Math.sin(angle),
+          radius: 10,
+          color: '#10b981',
+          node: d,
+          tier: 5,
+          tierLabel: 'DEP. DISTRITAL',
+          angle
+        };
+      });
+
+      // Coligações
+      coalNodes.forEach((cn, idx) => {
+        const angle = Math.PI * 0.75 + idx * 0.3;
+        positions[cn.id] = {
+          x: cx + 130 * Math.cos(angle),
+          y: cy + 130 * Math.sin(angle),
+          radius: 11,
+          color: '#ec4899',
+          node: cn,
+          tier: 0.5,
+          tierLabel: 'COLIGAÇÃO',
+          angle
+        };
+      });
+
+    } else {
+      // =======================================================================
+      // MODE 1B: LINEAR CASCADING TREE (CORRIGIDA)
+      // 6 Colunas organizadas com espaçamento fluido
+      // =======================================================================
+      const colX = {
+        party: 90,
+        pres: 260,
+        gov: 440,
+        sen: 620,
+        fed: 800,
+        distA: 960,
+        distB: 1040
       };
-    });
+
+      partyNodes.forEach((p, idx) => {
+        positions[p.id] = {
+          x: colX.party,
+          y: cy + (idx - (partyNodes.length - 1) / 2) * 90,
+          radius: 22,
+          color: '#6366f1',
+          node: p,
+          tier: 0,
+          tierLabel: 'LEGENDA'
+        };
+      });
+
+      distributeInColumn(presNodes, colX.pres, cy, 340, positions, (node) => ({
+        radius: node.metadata?.cargo === 'PRESIDENTE' ? 16 : 13,
+        color: '#f59e0b',
+        tier: 1,
+        tierLabel: 'PRESIDENTE'
+      }));
+
+      distributeInColumn(govNodes, colX.gov, cy, 360, positions, (node) => ({
+        radius: node.metadata?.cargo === 'GOVERNADOR' ? 16 : 13,
+        color: '#8b5cf6',
+        tier: 2,
+        tierLabel: 'GOVERNADOR'
+      }));
+
+      distributeInColumn(senNodes, colX.sen, cy, 440, positions, (node) => ({
+        radius: node.metadata?.cargo === 'SENADOR' ? 15 : 11,
+        color: '#3b82f6',
+        tier: 3,
+        tierLabel: 'SENADOR'
+      }));
+
+      distributeInColumn(fedNodes, colX.fed, cy, 520, positions, () => ({
+        radius: 12,
+        color: '#06b6d4',
+        tier: 4,
+        tierLabel: 'DEP. FEDERAL'
+      }));
+
+      const distA = distNodes.filter((_, i) => i % 2 === 0);
+      const distB = distNodes.filter((_, i) => i % 2 !== 0);
+      distributeInColumn(distA, colX.distA, cy, 540, positions, () => ({
+        radius: 10,
+        color: '#10b981',
+        tier: 5,
+        tierLabel: 'DEP. DISTRITAL'
+      }));
+      distributeInColumn(distB, colX.distB, cy + 18, 540, positions, () => ({
+        radius: 10,
+        color: '#10b981',
+        tier: 5,
+        tierLabel: 'DEP. DISTRITAL'
+      }));
+
+      propNodes.forEach((pr, i) => {
+        const parentGov = govNodes.find(g => pr.id.includes(g.metadata?.sq_candidato || '###')) ||
+                          presNodes.find(p => pr.id.includes(p.metadata?.sq_candidato || '###'));
+        if (parentGov && positions[parentGov.id]) {
+          const pPos = positions[parentGov.id];
+          positions[pr.id] = {
+            x: pPos.x + 38,
+            y: pPos.y - 28,
+            radius: 9,
+            color: '#34d399',
+            node: pr,
+            tier: pPos.tier + 0.5,
+            tierLabel: 'PLANO TSE'
+          };
+        } else {
+          positions[pr.id] = {
+            x: colX.gov + 45,
+            y: 70 + i * 35,
+            radius: 9,
+            color: '#34d399',
+            node: pr,
+            tier: 2.5
+          };
+        }
+      });
+
+      coalNodes.forEach((cn, i) => {
+        positions[cn.id] = {
+          x: colX.party + 70,
+          y: cy + 150 + i * 50,
+          radius: 11,
+          color: '#ec4899',
+          node: cn,
+          tier: 0.5,
+          tierLabel: 'COLIGAÇÃO'
+        };
+      });
+    }
 
   } else {
     // =========================================================================
@@ -1737,40 +1906,40 @@ function renderGraph() {
     const govNodes = nodes.filter(n => n.type === 'CANDIDATE' && (n.metadata?.cargo === 'GOVERNADOR' || n.metadata?.cargo === 'VICE-GOVERNADOR'));
     const propNodes = nodes.filter(n => n.type === 'GOVERNMENT_PLAN');
 
-    // Col 1: Partidos Políticos (Staggered into 2 columns for pristine spacing)
+    // Col 1: Partidos Políticos (Escalonado em 2 colunas para espaçamento perfeito)
     const pColA = partyNodes.filter((_, i) => i % 2 === 0);
     const pColB = partyNodes.filter((_, i) => i % 2 !== 0);
-    distributeInColumn(pColA, 110, cy, 510, positions, () => ({
+    distributeInColumn(pColA, 110, cy, 550, positions, () => ({
       radius: 12,
       color: '#6366f1',
       tier: 0,
       tierLabel: 'PARTIDO'
     }));
-    distributeInColumn(pColB, 225, cy + 18, 510, positions, () => ({
+    distributeInColumn(pColB, 230, cy + 18, 550, positions, () => ({
       radius: 12,
       color: '#6366f1',
       tier: 0,
       tierLabel: 'PARTIDO'
     }));
 
-    // Col 2: Presidenciáveis 2026 (Staggered into 2 columns for zero vertical overlap)
+    // Col 2: Presidenciáveis 2026 (Escalonado em 2 colunas)
     const presColA = presNodes.filter((_, i) => i % 2 === 0);
     const presColB = presNodes.filter((_, i) => i % 2 !== 0);
-    distributeInColumn(presColA, 470, cy, 510, positions, (node) => ({
+    distributeInColumn(presColA, 500, cy, 550, positions, (node) => ({
       radius: node.metadata?.cargo === 'PRESIDENTE' ? 16 : 13,
       color: '#f59e0b',
       tier: 1,
       tierLabel: 'PRESIDENTE'
     }));
-    distributeInColumn(presColB, 595, cy + 20, 510, positions, (node) => ({
+    distributeInColumn(presColB, 630, cy + 20, 550, positions, (node) => ({
       radius: node.metadata?.cargo === 'PRESIDENTE' ? 16 : 13,
       color: '#f59e0b',
       tier: 1,
       tierLabel: 'PRESIDENTE'
     }));
 
-    // Col 3: Governadores GDF 2026 (Right Column)
-    distributeInColumn(govNodes, 885, cy, 500, positions, (node) => ({
+    // Col 3: Governadores GDF 2026 (Coluna da Direita)
+    distributeInColumn(govNodes, 940, cy, 540, positions, (node) => ({
       radius: node.metadata?.cargo === 'GOVERNADOR' ? 16 : 13,
       color: '#8b5cf6',
       tier: 2,
@@ -1825,29 +1994,53 @@ function renderGraph() {
 
   // Background subtle starfield / grid
   ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
-  for (let gx = -200; gx < w + 400; gx += 80) {
-    for (let gy = -200; gy < h + 400; gy += 80) {
+  for (let gx = -300; gx < w + 500; gx += 80) {
+    for (let gy = -300; gy < h + 500; gy += 80) {
       ctx.beginPath();
       ctx.arc(gx, gy, 1, 0, Math.PI * 2);
       ctx.fill();
     }
   }
 
-  // Column Dividers and Tier Headers
-  if (isPartyHierarchy) {
+  // Background Orbit Guides (Radial) OR Column Dividers (Linear/Macro)
+  if (isRadial) {
+    const orbits = [
+      { r: 65, label: 'Órbita 1: Executivo Nacional' },
+      { r: 120, label: 'Órbita 2: Executivo DF' },
+      { r: 175, label: 'Órbita 3: Senado Federal' },
+      { r: 230, label: 'Órbita 4: Câmara Federal' },
+      { r: 285, label: 'Órbita 5: CLDF' }
+    ];
+
+    ctx.setLineDash([3, 7]);
+    ctx.lineWidth = 1;
+    orbits.forEach(orb => {
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.06)';
+      ctx.beginPath();
+      ctx.arc(cx, cy, orb.r, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Rótulo sutil da órbita no topo
+      ctx.font = '700 9px Plus Jakarta Sans, sans-serif';
+      ctx.fillStyle = 'rgba(148, 163, 184, 0.35)';
+      ctx.textAlign = 'center';
+      ctx.fillText(orb.label, cx, cy - orb.r - 4);
+    });
+    ctx.setLineDash([]);
+  } else if (isPartyHierarchy) {
     const colHeaders = [
-      { x: 85, label: '🏛️ LEGENDA' },
-      { x: 240, label: '🇧🇷 PRESIDENTE' },
-      { x: 410, label: '🏛️ GOVERNADOR' },
-      { x: 580, label: '⭐ SENADO (DF)' },
-      { x: 755, label: '🏛️ DEP. FEDERAIS' },
-      { x: 960, label: '📍 DEP. DISTRITAIS (CLDF)' }
+      { x: 90, label: '🏛️ LEGENDA' },
+      { x: 260, label: '🇧🇷 PRESIDENTE' },
+      { x: 440, label: '🏛️ GOVERNADOR' },
+      { x: 620, label: '⭐ SENADO (DF)' },
+      { x: 800, label: '🏛️ DEP. FEDERAIS' },
+      { x: 1000, label: '📍 DEP. DISTRITAIS (CLDF)' }
     ];
 
     ctx.setLineDash([4, 6]);
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
     ctx.lineWidth = 1;
-    [162, 325, 495, 667, 837].forEach(divX => {
+    [175, 350, 530, 710, 890].forEach(divX => {
       ctx.beginPath();
       ctx.moveTo(divX, 40);
       ctx.lineTo(divX, h - 20);
@@ -1874,15 +2067,15 @@ function renderGraph() {
   } else {
     // Macro Column Headers
     const macroHeaders = [
-      { x: 168, label: '🏛️ PARTIDOS & COLIGAÇÕES' },
-      { x: 550, label: '🇧🇷 PRESIDENCIÁVEIS 2026' },
-      { x: 885, label: '🏛️ DISPUTA GDF 2026' }
+      { x: 170, label: '🏛️ PARTIDOS & COLIGAÇÕES' },
+      { x: 565, label: '🇧🇷 PRESIDENCIÁVEIS 2026' },
+      { x: 940, label: '🏛️ DISPUTA GDF 2026' }
     ];
 
     ctx.setLineDash([4, 6]);
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
     ctx.lineWidth = 1;
-    [360, 715].forEach(divX => {
+    [370, 760].forEach(divX => {
       ctx.beginPath();
       ctx.moveTo(divX, 40);
       ctx.lineTo(divX, h - 20);
@@ -1920,26 +2113,38 @@ function renderGraph() {
     if (isActive) {
       ctx.strokeStyle = '#38bdf8';
       ctx.lineWidth = 2.5;
-      ctx.shadowColor = 'rgba(56, 189, 248, 0.7)';
-      ctx.shadowBlur = 10;
+      ctx.shadowColor = 'rgba(56, 189, 248, 0.8)';
+      ctx.shadowBlur = 12;
     } else if (hasFocus) {
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
       ctx.lineWidth = 1;
       ctx.shadowBlur = 0;
     } else {
-      ctx.strokeStyle = isPartyHierarchy ? 'rgba(99, 102, 241, 0.18)' : 'rgba(255, 255, 255, 0.14)';
+      ctx.strokeStyle = isPartyHierarchy ? 'rgba(99, 102, 241, 0.22)' : 'rgba(255, 255, 255, 0.14)';
       ctx.lineWidth = 1.2;
       ctx.shadowBlur = 0;
     }
 
     ctx.beginPath();
-    ctx.moveTo(p1.x, p1.y);
 
-    if (isPartyHierarchy) {
-      // Smooth cubic bezier for cascading tree
-      const dx = Math.abs(p2.x - p1.x);
-      ctx.bezierCurveTo(p1.x + dx * 0.45, p1.y, p2.x - dx * 0.45, p2.y, p2.x, p2.y);
+    if (isRadial) {
+      // RADIAL: Feixe direto e limpo do pai para o filho (sem curvas ou laços invertidos)
+      ctx.moveTo(p1.x, p1.y);
+      ctx.lineTo(p2.x, p2.y);
+    } else if (isPartyHierarchy) {
+      // LINEAR: Curva de Bézier normalizada da esquerda para a direita (sempre pStart.x <= pEnd.x)
+      const pStart = p1.x <= p2.x ? p1 : p2;
+      const pEnd = p1.x <= p2.x ? p2 : p1;
+      const dx = pEnd.x - pStart.x;
+      ctx.moveTo(pStart.x, pStart.y);
+      ctx.bezierCurveTo(
+        pStart.x + dx * 0.45, pStart.y,
+        pEnd.x - dx * 0.45, pEnd.y,
+        pEnd.x, pEnd.y
+      );
     } else {
+      // MACRO: Linha reta límpida
+      ctx.moveTo(p1.x, p1.y);
       ctx.lineTo(p2.x, p2.y);
     }
 
@@ -1981,7 +2186,7 @@ function renderGraph() {
     if (isDirectHover || (isPartyHierarchy && p.node.type === 'PARTY')) {
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.radius + 8, 0, Math.PI * 2);
-      ctx.fillStyle = (p.node.type === 'PARTY') ? 'rgba(99, 102, 241, 0.25)' : 'rgba(56, 189, 248, 0.3)';
+      ctx.fillStyle = (p.node.type === 'PARTY') ? 'rgba(99, 102, 241, 0.28)' : 'rgba(56, 189, 248, 0.3)';
       ctx.fill();
     }
 
@@ -1990,11 +2195,11 @@ function renderGraph() {
     ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
     ctx.fillStyle = p.color;
     ctx.fill();
-    ctx.strokeStyle = isDirectHover ? '#fff' : 'rgba(255, 255, 255, 0.7)';
+    ctx.strokeStyle = isDirectHover ? '#fff' : 'rgba(255, 255, 255, 0.75)';
     ctx.lineWidth = isDirectHover ? 2.5 : 1.5;
     ctx.stroke();
 
-    // Node Label inside readable pill
+    // Node Label
     let rawLabel = p.node.label || '';
     if (p.node.type === 'PARTY' && isPartyHierarchy) {
       rawLabel = p.node.metadata?.sigla || rawLabel;
@@ -2003,22 +2208,58 @@ function renderGraph() {
 
     ctx.font = isDirectHover ? '800 11px Plus Jakarta Sans, sans-serif' : '700 10px Plus Jakarta Sans, sans-serif';
     const textW = ctx.measureText(cleanLabel).width;
-    const labelY = p.y + p.radius + 12;
 
-    // Pill background
-    ctx.fillStyle = 'rgba(9, 12, 20, 0.88)';
-    ctx.beginPath();
-    ctx.roundRect(p.x - textW / 2 - 5, labelY - 8, textW + 10, 16, 4);
-    ctx.fill();
-    ctx.strokeStyle = isDirectHover ? 'rgba(56, 189, 248, 0.6)' : 'rgba(255, 255, 255, 0.12)';
-    ctx.lineWidth = 1;
-    ctx.stroke();
+    if (isRadial) {
+      // Posicionamento inteligente no modo Radial (evita colisões e sobreposições)
+      if (p.node.type === 'PARTY') {
+        const labelY = p.y + p.radius + 14;
+        ctx.fillStyle = 'rgba(9, 12, 20, 0.9)';
+        ctx.beginPath();
+        ctx.roundRect(p.x - textW / 2 - 6, labelY - 8, textW + 12, 16, 4);
+        ctx.fill();
+        ctx.strokeStyle = isDirectHover ? '#38bdf8' : 'rgba(255, 255, 255, 0.18)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
 
-    // Text
-    ctx.fillStyle = isDirectHover ? '#38bdf8' : 'rgba(255, 255, 255, 0.9)';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(cleanLabel, p.x, labelY);
+        ctx.fillStyle = '#fff';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(cleanLabel, p.x, labelY);
+      } else {
+        const cosA = Math.cos(p.angle ?? Math.atan2(p.y - cy, p.x - cx));
+        const isRight = cosA >= 0;
+        const labelX = isRight ? (p.x + p.radius + 6) : (p.x - p.radius - 6);
+        const rectX = isRight ? labelX - 2 : labelX - textW - 6;
+
+        ctx.fillStyle = 'rgba(9, 12, 20, 0.88)';
+        ctx.beginPath();
+        ctx.roundRect(rectX, p.y - 8, textW + 8, 16, 4);
+        ctx.fill();
+        ctx.strokeStyle = isDirectHover ? '#38bdf8' : 'rgba(255, 255, 255, 0.12)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        ctx.fillStyle = isDirectHover ? '#38bdf8' : 'rgba(255, 255, 255, 0.9)';
+        ctx.textAlign = isRight ? 'left' : 'right';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(cleanLabel, isRight ? labelX + 2 : labelX - 2, p.y);
+      }
+    } else {
+      // Posicionamento padrão no modo Linear e Macro (Abaixo do nó)
+      const labelY = p.y + p.radius + 12;
+      ctx.fillStyle = 'rgba(9, 12, 20, 0.88)';
+      ctx.beginPath();
+      ctx.roundRect(p.x - textW / 2 - 5, labelY - 8, textW + 10, 16, 4);
+      ctx.fill();
+      ctx.strokeStyle = isDirectHover ? 'rgba(56, 189, 248, 0.6)' : 'rgba(255, 255, 255, 0.12)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      ctx.fillStyle = isDirectHover ? '#38bdf8' : 'rgba(255, 255, 255, 0.9)';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(cleanLabel, p.x, labelY);
+    }
   });
 
   ctx.globalAlpha = 1.0;

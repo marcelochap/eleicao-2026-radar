@@ -328,12 +328,18 @@
           </select>
           <button id="btn-reset-graph" class="btn-icon" title="Resetar Visualização / Centralizar">⟲ Centralizar</button>
         </div>
+
+        <div class="graph-layout-toggle" id="graph-layout-toggle" style="display: none;">
+          <span class="toolbar-label">Layout:</span>
+          <button class="graph-layout-btn active" data-layout="radial" id="btn-layout-radial" title="Visualização em Órbitas Radiais (Recomendado)">🌐 Radial (Órbitas)</button>
+          <button class="graph-layout-btn" data-layout="linear" id="btn-layout-linear" title="Visualização em Árvore Linear">📐 Árvore Linear</button>
+        </div>
       </div>
 
       <!-- Workspace Dividido: Canvas Interativo + Inspector Panel Lateral -->
       <div class="graph-workspace">
         <div class="graph-canvas-wrapper">
-          <canvas id="networkCanvas" width="1060" height="620"></canvas>
+          <canvas id="networkCanvas" width="1140" height="680"></canvas>
           <div class="canvas-controls-overlay">
             <button id="btn-zoom-in" title="Aproximar Zoom">+</button>
             <button id="btn-zoom-out" title="Afastar Zoom">−</button>

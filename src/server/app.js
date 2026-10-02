@@ -194,7 +194,12 @@ app.get('/api/graph', (req, res) => {
 
       const finalNodes = [partyNode, ...partyCands, ...coalitionNodes, ...propNodes];
       const finalNodeIds = new Set(finalNodes.map(n => n.id));
-      const relevantEdges = rawData.edges.filter(e => finalNodeIds.has(e.source) && finalNodeIds.has(e.target));
+      // Remove arestas redundantes MEMBER_OF para que o fluxo hierárquico da chapa não fique poluído
+      const relevantEdges = rawData.edges.filter(e => 
+        finalNodeIds.has(e.source) && 
+        finalNodeIds.has(e.target) && 
+        e.relation !== 'MEMBER_OF'
+      );
 
       // Conexões de fluxo hierárquico da chapa partidária:
       // Partido -> Presidente -> Governador -> Senador -> Deputado Federal -> Deputado Distrital

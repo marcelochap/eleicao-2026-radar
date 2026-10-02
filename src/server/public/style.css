@@ -955,6 +955,37 @@ body {
   border-color: var(--accent-secondary);
 }
 
+.graph-layout-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+}
+.graph-layout-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.graph-layout-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.06);
+}
+.graph-layout-btn.active {
+  background: var(--accent-primary);
+  color: #fff;
+  border-color: var(--accent-primary);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35);
+}
+
 /* Graph Workspace (Canvas + Inspector Panel) */
 .graph-workspace {
   display: grid;
@@ -977,7 +1008,7 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: var(--radius-md);
   overflow: hidden;
-  height: 620px;
+  height: 680px;
 }
 #networkCanvas {
   display: block;
