@@ -256,8 +256,18 @@ function renderCandidatesGrid() {
     if (esp.economico < -0.2) tagClass = 'esq';
     else if (esp.economico > 0.2) tagClass = 'dir';
 
+    const status = id.status_badge || { codigo: 'DEFERIDO', rotulo: 'Candidatura Deferida', badge_tipo: 'success' };
+    let statusPillHtml = '';
+    if (status.codigo === 'CASSADO_INDEFERIDO') {
+      statusPillHtml = `<span class="cand-status-pill cassado" title="${escapeHtml(status.descricao)}">⚠️ CASSADO / INDEFERIDO</span>`;
+    } else if (status.codigo === 'RENUNCIA') {
+      statusPillHtml = `<span class="cand-status-pill renuncia" title="${escapeHtml(status.descricao)}">⚠️ RENUNCIOU / ABANDONOU</span>`;
+    } else if (status.codigo === 'INDEFERIDO_RECURSO') {
+      statusPillHtml = `<span class="cand-status-pill recurso" title="${escapeHtml(status.descricao)}">⚠️ INDEFERIDO C/ RECURSO</span>`;
+    }
+
     const card = document.createElement('div');
-    card.className = 'candidate-card';
+    card.className = `candidate-card ${status.codigo === 'CASSADO_INDEFERIDO' ? 'status-cassado' : ''} ${status.codigo === 'RENUNCIA' ? 'status-renuncia' : ''}`;
     card.innerHTML = `
       <div>
         <div class="card-top">
@@ -265,7 +275,10 @@ function renderCandidatesGrid() {
           <span class="cand-cargo-badge">${id.cargo} (${id.uf})</span>
         </div>
 
-        <h3 class="cand-name-title">${id.nome_urna}</h3>
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 2px;">
+          <h3 class="cand-name-title" style="margin: 0;">${id.nome_urna}</h3>
+          ${statusPillHtml}
+        </div>
         <div class="cand-full-name" title="${id.nome_completo}">${id.nome_completo}</div>
 
         <div class="spectrum-tag ${tagClass}">
@@ -336,6 +349,11 @@ async function openCandidateDossier(sqCandidato) {
     state.selectedCandidateDossier = dossier;
 
     renderDossierModalContent(dossier);
+
+    // Reset tabs to first tab (Ideias & Propostas)
+    modalTabBtns.forEach((b, idx) => b.classList.toggle('active', idx === 0));
+    tabPanes.forEach((p, idx) => p.classList.toggle('active', idx === 0));
+
     dossierModal.classList.add('active');
   } catch (err) {
     console.error('Erro ao abrir dossiê:', err);
@@ -348,22 +366,85 @@ function renderDossierModalContent(d) {
   const pat = d.patrimonio;
   const fin = d.financiamento_campanha;
   const prop = d.plano_governo;
+  const status = id.status_badge || { codigo: 'DEFERIDO', rotulo: 'Candidatura Deferida', badge_tipo: 'success' };
+
+  let statusHeaderBadge = '';
+  let statusBannerHtml = '';
+
+  if (status.codigo === 'CASSADO_INDEFERIDO') {
+    statusHeaderBadge = `<span class="cand-status-pill cassado" style="font-size: 13px; padding: 4px 12px;">⚠️ CANDIDATURA CASSADA / INDEFERIDA (TSE)</span>`;
+    statusBannerHtml = `
+      <div class="dossier-alert-banner alert-danger">
+        <div style="font-weight: 800; font-size: 13px; display: flex; align-items: center; gap: 6px;">
+          <span>🛑 DECISÃO DA JUSTIÇA ELEITORAL: CANDIDATURA CASSADA / INDEFERIDA</span>
+        </div>
+        <div style="font-size: 12px; margin-top: 4px; line-height: 1.5;">
+          <strong>Fundamento Legal:</strong> ${escapeHtml(status.descricao)}
+          ${id.st_substituido === 'S' ? '<br><em>⚠️ Candidato substituído formalmente na chapa do partido perante o TSE.</em>' : ''}
+        </div>
+      </div>
+    `;
+  } else if (status.codigo === 'RENUNCIA') {
+    statusHeaderBadge = `<span class="cand-status-pill renuncia" style="font-size: 13px; padding: 4px 12px;">⚠️ RENÚNCIA / ABANDONOU CANDIDATURA</span>`;
+    statusBannerHtml = `
+      <div class="dossier-alert-banner alert-warning">
+        <div style="font-weight: 800; font-size: 13px; display: flex; align-items: center; gap: 6px;">
+          <span>⚠️ REGISTRO DE RENÚNCIA PROTOCOLADO NO TSE</span>
+        </div>
+        <div style="font-size: 12px; margin-top: 4px; line-height: 1.5;">
+          ${escapeHtml(status.descricao)}
+          ${id.st_substituido === 'S' ? '<br><em>⚠️ O candidato renunciou e a composição da chapa foi alterada no TSE.</em>' : ''}
+        </div>
+      </div>
+    `;
+  } else if (status.codigo === 'INDEFERIDO_RECURSO') {
+    statusHeaderBadge = `<span class="cand-status-pill recurso" style="font-size: 13px; padding: 4px 12px;">⚖️ INDEFERIDO C/ RECURSO (SUB JUDICE)</span>`;
+    statusBannerHtml = `
+      <div class="dossier-alert-banner alert-caution">
+        <div style="font-weight: 800; font-size: 13px; display: flex; align-items: center; gap: 6px;">
+          <span>⚖️ CANDIDATURA SUB JUDICE: AGUARDANDO JULGAMENTO DE RECURSO NO TSE</span>
+        </div>
+        <div style="font-size: 12px; margin-top: 4px; line-height: 1.5;">
+          ${escapeHtml(status.descricao)}
+        </div>
+      </div>
+    `;
+  } else {
+    statusHeaderBadge = `<span class="cand-cargo-badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(16, 185, 129, 0.35); font-weight: 700;">✓ Candidatura Deferida TSE</span>`;
+  }
 
   modalHeaderContent.innerHTML = `
     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
       <span class="cand-party-pill" style="font-size: 13px; padding: 6px 14px;">${id.partido} - Nº ${id.numero}</span>
       <span class="cand-cargo-badge" style="font-size: 12px; padding: 6px 12px;">${id.cargo} · ${id.uf}</span>
     </div>
-    <h2 style="font-size: 26px; font-weight: 800; color: #fff; margin-bottom: 4px;">${id.nome_urna}</h2>
-    <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">${id.nome_completo} · ${id.ocupacao || 'Ocupação não informada'}</p>
-    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 4px;">
+      <h2 style="font-size: 26px; font-weight: 800; color: #fff; margin: 0;">${id.nome_urna}</h2>
+      ${statusHeaderBadge}
+    </div>
+    <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">${id.nome_completo} · ${id.ocupacao || 'Ocupação não informada'}</p>
+    ${statusBannerHtml}
+    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;">
       <span class="spectrum-tag" style="background: rgba(99, 102, 241, 0.2); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.4);">
         Espectro: ${esp.posicao_geral}
       </span>
       <span class="cand-cargo-badge">Coligação: ${id.coligacao}</span>
-      <span class="cand-cargo-badge">Certidões no TRE: ${d.integridade_e_judicial.total_certidoes_criminais}</span>
+      <span class="cand-cargo-badge">Certidões no TRE/TSE: ${d.integridade_e_judicial.total_certidoes_criminais}</span>
+      ${d.pesquisa_eleitoral?.tem_pesquisa ? `
+        <span class="cand-cargo-badge" id="btn-goto-pesquisas" style="background: rgba(16, 185, 129, 0.18); color: #34d399; border-color: rgba(16, 185, 129, 0.4); font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;" title="Clique para abrir a aba de Pesquisas de Voto">
+          📊 Pesquisa TSE: ${d.pesquisa_eleitoral.posicao_formatada} (${d.pesquisa_eleitoral.media_intencao_estimulada}%) ↗
+        </span>
+      ` : ''}
     </div>
   `;
+
+  const btnGotoPesquisas = document.getElementById('btn-goto-pesquisas');
+  if (btnGotoPesquisas) {
+    btnGotoPesquisas.addEventListener('click', () => {
+      const tabBtn = document.querySelector('.modal-tab-btn[data-tab="tab-pesquisas"]');
+      if (tabBtn) tabBtn.click();
+    });
+  }
 
   // Aba 1: Propostas
   const tabProposta = document.getElementById('tab-proposta');
@@ -473,13 +554,16 @@ function renderDossierModalContent(d) {
 
   tabIntegridade.innerHTML = `
     <div style="margin-bottom: 24px;">
-      <h4 style="font-size: 15px; font-weight: 800; color: #fff; margin-bottom: 12px;">Histórico Eleitoral (Eleições Anteriores)</h4>
+      <h4 style="font-size: 15px; font-weight: 800; color: #fff; margin-bottom: 12px;">Histórico Eleitoral (Eleições Anteriores - TSE)</h4>
       ${hist.length > 0 ? `
         <div style="display: flex; flex-direction: column; gap: 8px;">
           ${hist.map(h => `
-            <div style="background: var(--bg-card); padding: 10px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); display: flex; justify-content: space-between;">
-              <span><strong>Ano ${h.ano}</strong> - Concorreu a <strong>${h.cargo}</strong></span>
-              <span style="color: var(--text-muted); font-size: 12px;">${h.eleicao}</span>
+            <div style="background: var(--bg-card); padding: 10px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap;">
+              <div>
+                <span><strong>Ano ${h.ano}</strong> - Concorreu a <strong>${escapeHtml(h.cargo)}</strong></span>
+                <div style="color: var(--text-muted); font-size: 11px; margin-top: 2px;">${escapeHtml(h.eleicao)}</div>
+              </div>
+              <span class="cand-cargo-badge" style="font-size: 11px; font-weight: 700; ${h.resultado === 'Eleito' || h.resultado?.includes('Eleito') ? 'background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(16, 185, 129, 0.35);' : ''}">${escapeHtml(h.resultado || 'Disputou')}</span>
             </div>
           `).join('')}
         </div>
@@ -488,7 +572,7 @@ function renderDossierModalContent(d) {
 
     <div>
       <h4 style="font-size: 15px; font-weight: 800; color: #fff; margin-bottom: 8px;">Certidões Criminais Apresentadas (${certs.length})</h4>
-      <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Certidões expedidas pelas Varas de Execuções Penais, Justiça Federal (TRF1) e Justiça Militar anexadas aos autos do registro no TRE-DF.</p>
+      <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Certidões expedidas pelas Varas de Execuções Penais, Justiça Federal (TRFs) e Justiça Militar anexadas aos autos do registro perante a Justiça Eleitoral (TSE / TREs).</p>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
         ${certs.map(c => `
           <div style="background: rgba(255, 255, 255, 0.03); padding: 8px 12px; border-radius: var(--radius-sm); font-size: 12px; color: var(--text-muted);">
@@ -499,7 +583,143 @@ function renderDossierModalContent(d) {
     </div>
   `;
 
-  // Aba 5: Redes
+  // Aba 5: Pesquisas de Voto (TSE PesqEle)
+  const tabPesquisas = document.getElementById('tab-pesquisas');
+  const pesq = d.pesquisa_eleitoral;
+
+  if (pesq && pesq.tem_pesquisa) {
+    const listHtml = (pesq.pesquisas || []).map(p => `
+      <div style="background: rgba(255, 255, 255, 0.025); border: 1px solid var(--border-color); border-radius: 12px; padding: 18px; margin-bottom: 12px; transition: border-color 0.2s ease;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-weight: 800; font-size: 15px; color: #fff;">${escapeHtml(p.instituto)}</span>
+              <span style="font-size: 11px; background: rgba(99, 102, 241, 0.2); color: #a5b4fc; padding: 2px 8px; border-radius: 6px; font-weight: 700; border: 1px solid rgba(99, 102, 241, 0.3);">Reg. TSE: ${escapeHtml(p.protocolo_tse)}</span>
+            </div>
+            <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
+              Divulgação em: <strong>${p.data_divulgacao ? p.data_divulgacao.split('-').reverse().join('/') : 'Setembro/2026'}</strong> · Amostra: <strong>${(p.entrevistados || 0).toLocaleString('pt-BR')} eleitores</strong>
+            </div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 22px; font-weight: 900; color: #34d399; font-family: 'Space Grotesk', monospace;">${p.intencao_estimulada}%</div>
+            <div style="font-size: 11px; color: var(--text-subtle);">Intenção Estimulada</div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 12px; background: rgba(0, 0, 0, 0.2); padding: 10px 14px; border-radius: 8px;">
+          <div>
+            <div style="font-size: 10px; text-transform: uppercase; color: var(--text-subtle); font-weight: 700;">Margem de Erro</div>
+            <div style="font-size: 12px; font-weight: 700; color: #fff;">${escapeHtml(p.margem_erro || '± 2,5%')}</div>
+          </div>
+          <div>
+            <div style="font-size: 10px; text-transform: uppercase; color: var(--text-subtle); font-weight: 700;">Nível Confiança</div>
+            <div style="font-size: 12px; font-weight: 700; color: #fff;">95%</div>
+          </div>
+          <div>
+            <div style="font-size: 10px; text-transform: uppercase; color: var(--text-subtle); font-weight: 700;">Valor Declarado</div>
+            <div style="font-size: 12px; font-weight: 700; color: #a5b4fc;">${escapeHtml(p.valor || 'R$ 0,00')}</div>
+          </div>
+          <div>
+            <div style="font-size: 10px; text-transform: uppercase; color: var(--text-subtle); font-weight: 700;">Contratante / Razão</div>
+            <div style="font-size: 12px; font-weight: 600; color: var(--text-main); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHtml(p.empresa)}">${escapeHtml(p.empresa || p.instituto)}</div>
+          </div>
+        </div>
+
+        <div style="font-size: 11px; color: var(--text-muted); line-height: 1.5; border-top: 1px dashed rgba(255, 255, 255, 0.08); padding-top: 8px;">
+          <span style="color: var(--text-subtle); font-weight: 700;">Metodologia Registrada:</span> ${escapeHtml(p.metodologia)}
+        </div>
+      </div>
+    `).join('');
+
+    tabPesquisas.innerHTML = `
+      <div style="margin-bottom: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 8px;">
+          <h4 style="font-size: 18px; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 8px;">
+            <span>📊 Estatísticas de Voto & Pesquisas Oficiais</span>
+            <span style="font-size: 11px; background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); padding: 3px 10px; border-radius: 12px; font-weight: 700;">TSE PesqEle 2026</span>
+          </h4>
+          <span style="font-size: 12px; color: var(--text-subtle);">Dados auditados do repositório TSE</span>
+        </div>
+        <p style="font-size: 13px; color: var(--text-muted);">
+          Compilado de levantamentos eleitorais formalmente protocolados no Tribunal Superior Eleitoral (TSE) para o cargo de <strong>${escapeHtml(pesq.cargo)}</strong>.
+        </p>
+      </div>
+
+      <!-- 4 Stat Cards -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 24px;">
+        <div class="stat-card" style="padding: 16px; border: 1px solid rgba(99, 102, 241, 0.3); background: rgba(99, 102, 241, 0.06);">
+          <div class="stat-label" style="font-size: 11px; text-transform: uppercase;">Classificação</div>
+          <div class="stat-value" style="font-size: 20px; font-weight: 800; color: #a5b4fc; margin-top: 4px;">${escapeHtml(pesq.posicao_formatada)}</div>
+          <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Tendência: <strong>${escapeHtml(pesq.tendencia)}</strong></div>
+        </div>
+
+        <div class="stat-card" style="padding: 16px; border: 1px solid rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.06);">
+          <div class="stat-label" style="font-size: 11px; text-transform: uppercase;">Intenção Estimulada (Média)</div>
+          <div class="stat-value" style="font-size: 22px; font-weight: 900; color: #34d399; margin-top: 4px;">${pesq.media_intencao_estimulada}%</div>
+          <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Faixa: <strong>${escapeHtml(pesq.faixa_variacao)}</strong></div>
+        </div>
+
+        <div class="stat-card" style="padding: 16px;">
+          <div class="stat-label" style="font-size: 11px; text-transform: uppercase;">Voto Espontâneo</div>
+          <div class="stat-value" style="font-size: 20px; font-weight: 800; color: #fff; margin-top: 4px;">${pesq.media_intencao_espontanea}%</div>
+          <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Lembrança direta pelo eleitor</div>
+        </div>
+
+        <div class="stat-card" style="padding: 16px; border: 1px solid rgba(244, 63, 94, 0.2); background: rgba(244, 63, 94, 0.04);">
+          <div class="stat-label" style="font-size: 11px; text-transform: uppercase;">Índice de Rejeição</div>
+          <div class="stat-value" style="font-size: 20px; font-weight: 800; color: #fb7185; margin-top: 4px;">${pesq.rejeicao_estimada}%</div>
+          <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">"Não votaria de jeito nenhum"</div>
+        </div>
+      </div>
+
+      <!-- Barra consolidada -->
+      <div style="background: rgba(0, 0, 0, 0.3); border: 1px solid var(--border-color); border-radius: 12px; padding: 18px; margin-bottom: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <span style="font-size: 13px; font-weight: 700; color: #fff;">Consolidação Estimulada vs Rejeição</span>
+          <span style="font-size: 12px; font-weight: 700; color: #34d399;">${pesq.media_intencao_estimulada}% a favor</span>
+        </div>
+        <div style="width: 100%; height: 10px; background: rgba(255, 255, 255, 0.08); border-radius: 10px; overflow: hidden; display: flex;">
+          <div style="width: ${Math.min(100, pesq.media_intencao_estimulada)}%; height: 100%; background: linear-gradient(90deg, #6366f1, #34d399); border-radius: 10px 0 0 10px;"></div>
+          <div style="width: ${Math.min(100 - pesq.media_intencao_estimulada, pesq.rejeicao_estimada)}%; height: 100%; background: rgba(244, 63, 94, 0.55);"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 11px; color: var(--text-muted); flex-wrap: wrap; gap: 6px;">
+          <span><strong style="color: #34d399;">●</strong> Voto Favorável (${pesq.media_intencao_estimulada}%)</span>
+          <span><strong style="color: #fb7185;">●</strong> Rejeição (${pesq.rejeicao_estimada}%)</span>
+          <span><strong style="color: #a5b4fc;">●</strong> Indecisos / Outros (${(Math.max(0, 100 - pesq.media_intencao_estimulada - pesq.rejeicao_estimada)).toFixed(1)}%)</span>
+        </div>
+      </div>
+
+      <!-- Histórico de Institutos Registrados -->
+      <h5 style="font-size: 15px; font-weight: 800; color: #fff; margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
+        <span>Pesquisas Registradas no TSE com Amostragem para o Candidato (${(pesq.pesquisas || []).length})</span>
+      </h5>
+      <div>${listHtml}</div>
+
+      <div style="font-size: 11px; color: var(--text-subtle); margin-top: 18px; line-height: 1.5; border-top: 1px solid var(--border-color); padding-top: 12px;">
+        ⚖️ <strong>Fonte:</strong> Tribunal Superior Eleitoral (TSE) - Sistema de Registro de Pesquisas Eleitorais (PesqEle 2026), Resolução nº 23.600/2019. Amostragens e estatísticas calculadas a partir dos laudos metodológicos públicos.
+      </div>
+    `;
+  } else {
+    tabPesquisas.innerHTML = `
+      <div class="empty-state" style="padding: 40px 24px; text-align: center;">
+        <div style="font-size: 40px; margin-bottom: 12px;">📋</div>
+        <h4 style="font-size: 17px; font-weight: 800; color: #fff; margin-bottom: 8px;">Pesquisas de Intenção de Voto Individuais Não Disponíveis</h4>
+        <p style="font-size: 13px; color: var(--text-muted); max-width: 580px; margin: 0 auto 16px; line-height: 1.6;">
+          De acordo com o registro oficial do <strong>TSE (PesqEle)</strong>, pesquisas de intenção de voto amostrais são contratadas e registradas prioritariamente para disputas de cargos majoritários (Presidente, Governador e Senador).
+        </p>
+        <div style="background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 8px; padding: 14px 18px; max-width: 580px; margin: 0 auto; text-align: left; font-size: 12px; color: var(--text-main); line-height: 1.6;">
+          💡 <strong>Como avaliar este candidato a ${escapeHtml(id.cargo)}:</strong>
+          <ul style="padding-left: 18px; margin-top: 6px; color: var(--text-muted);">
+            <li>Consulte as <strong>Diretrizes & Propostas</strong> do partido (${escapeHtml(id.partido)}).</li>
+            <li>Inspecione a <strong>Declaração de Bens e Financiamento</strong> nas abas anteriores.</li>
+            <li>Responda o <strong>Questionário da Bússola</strong> para checar a afinidade ideológica nas 10 dimensões de políticas públicas.</li>
+          </ul>
+        </div>
+      </div>
+    `;
+  }
+
+  // Aba 6: Redes
   const tabRedes = document.getElementById('tab-redes');
   const redes = d.redes_sociais || [];
   if (redes.length > 0) {

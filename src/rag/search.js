@@ -153,6 +153,37 @@ function enrichCandidateDossier(c, db, includeFullAssets = true) {
   let historico = [];
   try { historico = JSON.parse(c.historico_candidaturas || '[]'); } catch {}
 
+  // Pesquisas eleitorais oficiais (TSE PesqEle)
+  let pesquisaEleitoral = {
+    tem_pesquisa: false,
+    cargo: c.ds_cargo,
+    mensagem: 'Sem pesquisas de intenção de voto individuais registradas no TSE para esta candidatura proporcional.'
+  };
+
+  try {
+    const pollData = db.prepare(`SELECT * FROM candidate_polls WHERE sq_candidato = ?`).get(sq);
+    if (pollData) {
+      let historicoPesquisas = [];
+      try { historicoPesquisas = JSON.parse(pollData.historico_pesquisas_json || '[]'); } catch {}
+
+      pesquisaEleitoral = {
+        tem_pesquisa: true,
+        cargo: pollData.ds_cargo,
+        posicao_ranking: pollData.posicao_ranking,
+        posicao_formatada: pollData.posicao_formatada,
+        media_intencao_estimulada: pollData.media_intencao_estimulada,
+        media_intencao_espontanea: pollData.media_intencao_espontanea,
+        rejeicao_estimada: pollData.rejeicao_estimada,
+        faixa_variacao: pollData.faixa_variacao,
+        tendencia: pollData.tendencia,
+        total_pesquisas_registradas: pollData.total_pesquisas_avaliadas,
+        pesquisas: historicoPesquisas
+      };
+    }
+  } catch (err) {
+    console.error('Erro ao buscar pesquisas do candidato:', err);
+  }
+
   const percentFundoEleitoral = c.total_receitas > 0 ? (c.total_fundo_eleitoral / c.total_receitas) * 100 : 0;
   const percentRecursosProprios = c.total_receitas > 0 ? (c.total_doacao_propria / c.total_receitas) * 100 : 0;
 
@@ -169,6 +200,11 @@ function enrichCandidateDossier(c, db, includeFullAssets = true) {
       federacao: c.sg_federacao,
       coligacao: c.nm_coligacao,
       situacao_candidatura: c.ds_situacao_candidatura,
+      situacao_julgamento: c.situacao_julgamento || c.ds_situacao_candidatura,
+      motivo_cassacao: c.motivo_cassacao || null,
+      st_substituido: c.st_substituido || 'N',
+      sq_substituido: c.sq_substituido || '-1',
+      status_badge: formatCandidateStatus(c.ds_situacao_candidatura, c.motivo_cassacao, c.st_substituido),
       ocupacao: c.ds_ocupacao,
       grau_instrucao: c.ds_grau_instrucao,
       genero: c.ds_genero,
@@ -213,6 +249,7 @@ function enrichCandidateDossier(c, db, includeFullAssets = true) {
       }))
     },
     historico_eleitoral: historico,
+    pesquisa_eleitoral: pesquisaEleitoral,
     redes_sociais: redes
   };
 }
@@ -229,4 +266,60 @@ function inferSpectrumLabel(econ, soc) {
   else if (soc >= 0.3) socLabel = 'Conservador';
 
   return `${econLabel} (${socLabel})`;
+}
+
+function formatCandidateStatus(situacao, motivo, stSubstituido) {
+  const sit = (situacao || '').toUpperCase();
+  if (sit === 'INDEFERIDO' || sit.includes('CASSAD')) {
+    return {
+      codigo: 'CASSADO_INDEFERIDO',
+      rotulo: 'Candidatura Cassada / Indeferida',
+      badge_tipo: 'danger',
+      descricao: motivo || 'Registro de candidatura indeferido pela Justiça Eleitoral (TSE).',
+      ativo: false
+    };
+  }
+  if (sit === 'RENÚNCIA' || sit === 'RENUNCIA') {
+    return {
+      codigo: 'RENUNCIA',
+      rotulo: 'Renúncia / Abandonou Candidatura',
+      badge_tipo: 'warning',
+      descricao: 'O candidato protocolou renúncia expressa e abandonou a disputa eleitoral.',
+      ativo: false
+    };
+  }
+  if (sit.includes('INDEFERIDO') && sit.includes('RECURSO')) {
+    return {
+      codigo: 'INDEFERIDO_RECURSO',
+      rotulo: 'Indeferido com Recurso (Sub Judice)',
+      badge_tipo: 'caution',
+      descricao: motivo ? `${motivo} (Aguardando julgamento de recurso no TSE)` : 'Candidatura impugnada ou indeferida aguardando julgamento definitivo no TSE.',
+      ativo: true
+    };
+  }
+  if (sit.includes('DEFERIDO') && sit.includes('RECURSO')) {
+    return {
+      codigo: 'DEFERIDO_RECURSO',
+      rotulo: 'Deferido com Recurso',
+      badge_tipo: 'info',
+      descricao: 'Registro deferido pelo tribunal de origem, com recurso pendente de julgamento.',
+      ativo: true
+    };
+  }
+  if (sit === 'PENDENTE DE JULGAMENTO') {
+    return {
+      codigo: 'PENDENTE',
+      rotulo: 'Julgamento Pendente (Sub Judice)',
+      badge_tipo: 'info',
+      descricao: 'Processo de registro aguardando deliberação da Justiça Eleitoral.',
+      ativo: true
+    };
+  }
+  return {
+    codigo: 'DEFERIDO',
+    rotulo: 'Candidatura Deferida',
+    badge_tipo: 'success',
+    descricao: 'Registro de candidatura regular e deferido pela Justiça Eleitoral.',
+    ativo: true
+  };
 }
